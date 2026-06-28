@@ -221,14 +221,118 @@
         color: var(--text-faint);
         margin-top: 80px;
       }
+
+      .app-shell {
+        transition:
+          opacity 0.2s ease,
+          filter 0.2s ease;
+      }
+      .app-shell.dimmed {
+        opacity: 0.35;
+        filter: blur(1.5px);
+        pointer-events: none;
+      }
+
+      .auth-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(9, 14, 24, 0.68);
+        backdrop-filter: blur(6px);
+        z-index: 1000;
+      }
+      .auth-modal.hidden {
+        display: none;
+      }
+      .auth-card {
+        width: min(100%, 420px);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+        padding: 24px;
+      }
+      .auth-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+      }
+      .auth-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+      .auth-card input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+      .auth-card button {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: #2563eb;
+        color: white;
+        padding: 10px 12px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      .auth-card .secondary {
+        margin-top: 10px;
+        text-align: center;
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      .auth-status {
+        min-height: 20px;
+        margin-top: 10px;
+        color: #dc2626;
+        font-size: 0.9rem;
+      }
     </style>
   </head>
   <body>
+    <div class="app-shell" id="app-shell">
+      <header>
+        <a href="index.html">← Back to Blog</a>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+          🌙 Dark
+        </button>
+      </header>
+
+      <main id="content">
+        <p id="status">Loading post...</p>
+      </main>
+    </div>
+
+    <div id="auth-modal" class="auth-modal hidden">
+      <div class="auth-card">
+        <h3>Secure access</h3>
+        <p>
+          Sign in to view this post. The blog stays visible in the background.
+        </p>
+        <input id="auth-email" placeholder="Email" />
+        <input id="auth-password" type="password" placeholder="Password" />
+        <button id="auth-submit">Unlock</button>
+        <div class="secondary" id="auth-cancel">Continue browsing</div>
+        <div class="auth-status" id="auth-status"></div>
+      </div>
+    </div>
+
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
       import {
         getAuth,
         onAuthStateChanged,
+        signInWithEmailAndPassword,
       } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
       const firebaseConfig = {
@@ -239,27 +343,70 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      let currentUser = null;
 
-      // ✅ block UI early
-      document.body.style.display = "none";
+      const appShell = document.getElementById("app-shell");
+      const modal = document.getElementById("auth-modal");
+      const emailInput = document.getElementById("auth-email");
+      const passwordInput = document.getElementById("auth-password");
+      const submitBtn = document.getElementById("auth-submit");
+      const cancelBtn = document.getElementById("auth-cancel");
+      const statusEl = document.getElementById("auth-status");
 
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          window.location.href = "index.html";
+      function showModal() {
+        modal.classList.remove("hidden");
+        appShell.classList.add("dimmed");
+        document.body.style.overflow = "hidden";
+      }
+
+      function hideModal() {
+        modal.classList.add("hidden");
+        appShell.classList.remove("dimmed");
+        document.body.style.overflow = "";
+        statusEl.textContent = "";
+      }
+
+      async function handleSignIn() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        statusEl.textContent = "";
+
+        if (!email || !password) {
+          statusEl.textContent = "Please enter both email and password.";
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Signing in...";
+
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          hideModal();
+        } catch (error) {
+          statusEl.textContent = error.message || "Sign-in failed.";
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Unlock";
+        }
+      }
+
+      submitBtn.addEventListener("click", handleSignIn);
+      cancelBtn.addEventListener("click", hideModal);
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          hideModal();
         }
       });
+
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        if (!user) {
+          showModal();
+          return;
+        }
+        hideModal();
+      });
     </script>
-
-    <header>
-      <a href="index.html">← Back to Blog</a>
-      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
-        🌙 Dark
-      </button>
-    </header>
-
-    <main id="content">
-      <p id="status">Loading post...</p>
-    </main>
 
     <script>
       const PROJECT_ID = "xsd8o1za";
