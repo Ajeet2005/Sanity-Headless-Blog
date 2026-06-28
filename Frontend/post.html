@@ -224,6 +224,30 @@
     </style>
   </head>
   <body>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0",
+        authDomain: "sanity-blog-auth.firebaseapp.com",
+        projectId: "sanity-blog-auth",
+        storageBucket: "sanity-blog-auth.firebasestorage.app",
+        messagingSenderId: "552042411059",
+        appId: "1:552042411059:web:14265a745e929b19659f46",
+        measurementId: "G-H7Q0Y141WM",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    </script>
+
     <header>
       <a href="index.html">← Back to Blog</a>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
