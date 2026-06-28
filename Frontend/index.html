@@ -409,7 +409,7 @@
     </div>
 
     <script>
-      const PROJECT_ID = "import.meta.env.VITE_SANITY_PROJECT_ID";
+      const PROJECT_ID = "xsd8o1za";
       const DATASET = "production";
 
       const QUERY = encodeURIComponent(`*[_type == "post"]{
@@ -503,7 +503,7 @@
               </div>
               <div class="card-meta">
                 ${post.readingTime ? `<span class="reading-time">⏱ ${post.readingTime} min</span>` : ""}
-                <span class="date-str"> ${timeAgo(post.publishedAt || post._createdAt)}</span>
+                <span class="date-str">📅 ${timeAgo(post.publishedAt || post._createdAt)}</span>
               </div>
             </div>
           </div>

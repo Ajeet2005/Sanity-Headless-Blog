@@ -351,7 +351,7 @@
               </div>
               <div class="meta-right">
                 ${post.readingTime ? `<span class="reading-time">⏱ ${post.readingTime} min read</span>` : ""}
-                <span class="date-str"> ${timeAgo(post.publishedAt || post._createdAt)}</span>
+                <span class="date-str">📅 ${timeAgo(post.publishedAt || post._createdAt)}</span>
               </div>
             </div>
             <div class="body">${bodyHtml}</div>
@@ -359,7 +359,7 @@
               post.tags?.length
                 ? `
               <div class="tags-section">
-                <p class="tags-label">Tags</p>
+                <p class="tags-label"></p>
                 <div class="tags">
                   ${post.tags.map((tag) => `<span class="tag">#${tag}</span>`).join("")}
                 </div>
