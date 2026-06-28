@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog Post</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f9f9f9;
+        --surface: #ffffff;
+        --border: #e5e5e5;
+        --text: #1a1a1a;
+        --text-muted: #666;
+        --text-faint: #999;
+        --tag-border: #ddd;
+        --tag-color: #555;
+        --tag-hover-bg: #f0f0f0;
+        --toggle-bg: #f0f0f0;
+        --toggle-color: #333;
+      }
+
+      [data-theme="dark"] {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --border: #2a2a2a;
+        --text: #e8e8e8;
+        --text-muted: #aaa;
+        --text-faint: #666;
+        --tag-border: #444;
+        --tag-color: #bbb;
+        --tag-hover-bg: #2a2a2a;
+        --toggle-bg: #2a2a2a;
+        --toggle-color: #e8e8e8;
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 18px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      header a {
+        text-decoration: none;
+        color: var(--text);
+        font-size: 0.95rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      header a:hover {
+        color: var(--text-muted);
+      }
+
+      .theme-toggle {
+        background: var(--toggle-bg);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 6px 14px;
+        cursor: pointer;
+        font-size: 0.82rem;
+        color: var(--toggle-color);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+      }
+
+      main {
+        max-width: 760px;
+        margin: 48px auto;
+        padding: 0 24px;
+      }
+
+      .cover {
+        width: 100%;
+        height: 360px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 36px;
+        display: block;
+      }
+
+      .post-cats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .post-cat {
+        border: 1px solid var(--tag-border);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: 0.78rem;
+        color: var(--tag-color);
+        background: transparent;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 16px;
+        color: var(--text);
+      }
+
+      .meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 36px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .author {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .author-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--tag-hover-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      .author-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .author-name {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .meta-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+      }
+      .reading-time,
+      .date-str {
+        font-size: 0.82rem;
+        color: var(--text-faint);
+      }
+
+      .body p {
+        line-height: 1.9;
+        margin-bottom: 20px;
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      .tags-section {
+        margin-top: 48px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+      }
+      .tags-label {
+        font-size: 0.8rem;
+        color: var(--text-faint);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 12px;
+      }
+      .tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .tag {
+        border: 1px solid var(--tag-border);
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: 0.82rem;
+        color: var(--tag-color);
+        background: transparent;
+        transition: all 0.15s;
+      }
+      .tag:hover {
+        border-color: var(--text);
+        color: var(--text);
+        background: var(--tag-hover-bg);
+        cursor: pointer;
+      }
+
+      #status {
+        text-align: center;
+        color: var(--text-faint);
+        margin-top: 80px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="index.html">← Back to Blog</a>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+        🌙 Dark
+      </button>
+    </header>
+
+    <main id="content">
+      <p id="status">Loading post...</p>
+    </main>
+
+    <script>
+      const PROJECT_ID = "xsd8o1za";
+      const DATASET = "production";
+
+      // Theme
+      function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.getAttribute("data-theme") === "dark";
+        html.setAttribute("data-theme", isDark ? "light" : "dark");
+        document.getElementById("theme-btn").textContent = isDark
+          ? "🌙 Dark"
+          : "☀️ Light";
+        localStorage.setItem("theme", isDark ? "light" : "dark");
+      }
+      const savedTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      if (savedTheme === "dark")
+        document.getElementById("theme-btn").textContent = "☀️ Light";
+
+      function initials(name) {
+        if (!name) return "?";
+        return name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2);
+      }
+
+      function timeAgo(dateStr) {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (minutes < 60) return `${minutes} min ago`;
+        if (hours < 24) return `${hours} hr ago`;
+
+        return new Date(dateStr).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get("slug");
+
+      if (!slug) {
+        document.getElementById("status").textContent = "Post not found.";
+      } else {
+        const QUERY =
+          encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
+        title, publishedAt, _createdAt, excerpt, readingTime,
+        "authorName": author->name,
+        "authorImage": author->image.asset->url,
+        "imageUrl": mainImage.asset->url,
+        "ogImageUrl": ogImage.asset->url,
+        "categories": categories[]->title,
+        tags, body
+      }`);
+
+        const URL = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
+
+        fetch(URL)
+          .then((res) => res.json())
+          .then((data) => {
+            const post = data.result;
+            const content = document.getElementById("content");
+
+            if (!post) {
+              content.innerHTML = '<p id="status">Post not found.</p>';
+              return;
+            }
+
+            document.title = post.title;
+
+            if (post.ogImageUrl) {
+              const ogImg = document.createElement("meta");
+              ogImg.setAttribute("property", "og:image");
+              ogImg.setAttribute("content", post.ogImageUrl);
+              document.head.appendChild(ogImg);
+            }
+
+            const bodyHtml = post.body
+              ? post.body
+                  .map((block) => {
+                    if (block._type === "block") {
+                      const text = block.children.map((c) => c.text).join("");
+                      return text ? `<p>${text}</p>` : "";
+                    }
+                    return "";
+                  })
+                  .join("")
+              : "";
+
+            content.innerHTML = `
+            ${post.imageUrl ? `<img class="cover" src="${post.imageUrl}" alt="${post.title}" />` : ""}
+            ${
+              post.categories?.length
+                ? `
+              <div class="post-cats">
+                ${post.categories.map((cat) => `<span class="post-cat">${cat}</span>`).join("")}
+              </div>`
+                : ""
+            }
+            <h1>${post.title}</h1>
+            <div class="meta">
+              <div class="author">
+                <div class="author-avatar">
+                  ${post.authorImage ? `<img src="${post.authorImage}" alt="${post.authorName}" />` : initials(post.authorName)}
+                </div>
+                <span class="author-name">${post.authorName || "Unknown"}</span>
+              </div>
+              <div class="meta-right">
+                ${post.readingTime ? `<span class="reading-time">⏱ ${post.readingTime} min read</span>` : ""}
+                <span class="date-str"> ${timeAgo(post.publishedAt || post._createdAt)}</span>
+              </div>
+            </div>
+            <div class="body">${bodyHtml}</div>
+            ${
+              post.tags?.length
+                ? `
+              <div class="tags-section">
+                <p class="tags-label">Tags</p>
+                <div class="tags">
+                  ${post.tags.map((tag) => `<span class="tag">#${tag}</span>`).join("")}
+                </div>
+              </div>`
+                : ""
+            }
+          `;
+          })
+          .catch(() => {
+            document.getElementById("status").textContent =
+              "Failed to load post.";
+          });
+      }
+    </script>
+  </body>
+</html>
