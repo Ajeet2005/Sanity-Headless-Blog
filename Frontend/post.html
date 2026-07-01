@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.png" type="image/png+xml" />
+    <meta property="og:title" content="" />
+    <meta property="og:description" content="" />
+    <meta property="og:image" content="" />
+    <meta property="og:url" content="" />
+    <meta property="og:type" content="article" />
     <title>Blog Post</title>
     <style>
       * {
@@ -520,12 +525,18 @@
 
             document.title = post.title;
 
-            if (post.ogImageUrl) {
-              const ogImg = document.createElement("meta");
-              ogImg.setAttribute("property", "og:image");
-              ogImg.setAttribute("content", post.ogImageUrl);
-              document.head.appendChild(ogImg);
-            }
+            document
+              .querySelector('meta[property="og:title"]')
+              .setAttribute("content", post.title || "");
+            document
+              .querySelector('meta[property="og:description"]')
+              .setAttribute("content", post.excerpt || "");
+            document
+              .querySelector('meta[property="og:image"]')
+              .setAttribute("content", post.ogImageUrl || "");
+            document
+              .querySelector('meta[property="og:url"]')
+              .setAttribute("content", window.location.href);
 
             const bodyHtml = post.body
               ? post.body
