@@ -328,6 +328,7 @@
         color: inherit;
         display: flex;
         flex-direction: column;
+        position: relative;
         transition:
           border-color 0.2s,
           transform 0.2s,
@@ -337,6 +338,20 @@
         border-color: var(--card-hover-border);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+      }
+      .card-lock {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(15, 23, 42, 0.8);
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-size: 0.8rem;
+        z-index: 2;
       }
       .card img {
         width: 100%;
@@ -435,6 +450,71 @@
         margin-top: 60px;
         grid-column: 1/-1;
       }
+
+      .auth-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(9, 14, 24, 0.68);
+        backdrop-filter: blur(6px);
+        z-index: 1000;
+      }
+      .auth-modal.hidden {
+        display: none;
+      }
+      .auth-card {
+        width: min(100%, 420px);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+        padding: 24px;
+      }
+      .auth-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+      }
+      .auth-card p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+      .auth-card input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+      .auth-card button {
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: #2563eb;
+        color: white;
+        padding: 10px 12px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 4px;
+      }
+      .auth-card .secondary {
+        margin-top: 10px;
+        text-align: center;
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+      .auth-status {
+        min-height: 20px;
+        margin-top: 10px;
+        color: #dc2626;
+        font-size: 0.9rem;
+      }
     </style>
   </head>
   <body>
@@ -489,13 +569,182 @@
       </div>
     </div>
 
+    <div id="auth-modal" class="auth-modal hidden">
+      <div class="auth-card">
+        <h3>Private post</h3>
+        <p>Sign in to open this protected entry.</p>
+        <input id="auth-email" placeholder="Email" />
+        <input id="auth-password" type="password" placeholder="Password" />
+        <button id="auth-submit">Unlock</button>
+        <div class="secondary" id="auth-cancel">Continue browsing</div>
+        <div class="auth-status" id="auth-status"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
+      const modal = document.getElementById("auth-modal");
+      const appShell = document.getElementById("app-shell");
+      const statusEl = document.getElementById("auth-status");
+      const emailInput = document.getElementById("auth-email");
+      const passwordInput = document.getElementById("auth-password");
+      const submitBtn = document.getElementById("auth-submit");
+      const cancelBtn = document.getElementById("auth-cancel");
+      let authPromptOpen = false;
+      let authFlowInProgress = false;
+
+      function isLocalAccessGranted() {
+        const expiry = Number(
+          localStorage.getItem("privateAccessExpiresAt") || 0,
+        );
+        const hasToken = Boolean(localStorage.getItem("firebaseAuthToken"));
+        const stillValid = Date.now() < expiry || expiry === 0;
+        return (
+          (localStorage.getItem("privateAccess") === "granted" || hasToken) &&
+          stillValid
+        );
+      }
+
+      function grantLocalAccess(email, idToken, uid) {
+        const expiresAt = Date.now() + 60 * 60 * 1000;
+        localStorage.setItem("privateAccess", "granted");
+        localStorage.setItem("privateAccessExpiresAt", String(expiresAt));
+        localStorage.setItem("firebaseAuthToken", idToken || "");
+        localStorage.setItem("firebaseUserEmail", email || "");
+        localStorage.setItem("firebaseUserId", uid || "");
+        window.currentUser = {
+          uid: uid || "local-access",
+          email: email || "local",
+          idToken: idToken || "",
+        };
+      }
+
+      async function signInWithFirebase(email, password) {
+        const response = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              password,
+              returnSecureToken: true,
+            }),
+          },
+        );
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error?.message || "Sign-in failed.");
+        }
+
+        return data;
+      }
+
+      function showModal() {
+        if (isLocalAccessGranted()) {
+          window.currentUser = {
+            uid: localStorage.getItem("firebaseUserId") || "local-access",
+            email: localStorage.getItem("firebaseUserEmail") || "local",
+            idToken: localStorage.getItem("firebaseAuthToken") || "",
+          };
+          if (window.pendingAuthUrl) {
+            window.location.href = window.pendingAuthUrl;
+          }
+          return;
+        }
+
+        modal.classList.remove("hidden");
+        appShell.classList.add("dimmed");
+        document.body.style.overflow = "hidden";
+        authPromptOpen = true;
+        requestAnimationFrame(() => emailInput.focus());
+      }
+
+      function hideModal() {
+        modal.classList.add("hidden");
+        appShell.classList.remove("dimmed");
+        document.body.style.overflow = "";
+        statusEl.textContent = "";
+        authPromptOpen = false;
+      }
+
+      window.showAuthModal = showModal;
+      window.hideAuthModal = hideModal;
+      window.pendingAuthUrl = null;
+      window.currentUser = isLocalAccessGranted()
+        ? {
+            uid: localStorage.getItem("firebaseUserId") || "local-access",
+            email: localStorage.getItem("firebaseUserEmail") || "local",
+            idToken: localStorage.getItem("firebaseAuthToken") || "",
+          }
+        : null;
+
+      async function handleSignIn() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        statusEl.textContent = "";
+
+        if (!email || !password) {
+          statusEl.textContent = "Please enter both email and password.";
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Signing in...";
+        authFlowInProgress = true;
+
+        try {
+          const data = await signInWithFirebase(email, password);
+          grantLocalAccess(email, data.idToken, data.localId);
+          authFlowInProgress = false;
+          if (window.pendingAuthUrl) {
+            window.location.href = window.pendingAuthUrl;
+            return;
+          }
+          hideModal();
+        } catch (error) {
+          authFlowInProgress = false;
+          statusEl.textContent = error.message || "Sign-in failed.";
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Unlock";
+        }
+      }
+
+      function handleInputKeydown(event) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          handleSignIn();
+        }
+      }
+
+      emailInput.addEventListener("keydown", handleInputKeydown);
+      passwordInput.addEventListener("keydown", handleInputKeydown);
+      submitBtn.addEventListener("click", handleSignIn);
+      cancelBtn.addEventListener("click", () => {
+        window.pendingAuthUrl = null;
+        hideModal();
+      });
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          window.pendingAuthUrl = null;
+          hideModal();
+        }
+      });
+
+      if (authPromptOpen && window.currentUser && !authFlowInProgress) {
+        hideModal();
+      }
+    </script>
+
     <script>
       const PROJECT_ID = "xsd8o1za";
       const DATASET = "production";
 
       const QUERY =
         encodeURIComponent(`*[_type == "post" && postType == "journal"]{
-      _id, title, slug, publishedAt, _createdAt, excerpt, readingTime,
+      _id, title, slug, publishedAt, _createdAt, excerpt, readingTime, isPrivate,
       "authorName": author->name,
       "authorImage": author->image.asset->url,
       "imageUrl": mainImage.asset->url,
@@ -559,9 +808,11 @@
           return;
         }
         container.innerHTML = posts
-          .map(
-            (post) => `
-              <a class="card" href="post.html?slug=${post.slug?.current}">
+          .map((post) => {
+            const isPrivate = Boolean(post.isPrivate);
+            return `
+              <a class="card${isPrivate ? " private" : ""}" href="post.html?slug=${post.slug?.current}" data-private="${isPrivate}">
+                ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                 ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" />` : ""}
                 <div class="card-body">
                   ${
@@ -588,8 +839,8 @@
                   </div>
                 </div>
               </a>
-            `,
-          )
+            `;
+          })
           .join("");
       }
 
@@ -650,6 +901,21 @@
         const body = btn.nextElementSibling;
         body.classList.toggle("open");
       }
+
+      document.addEventListener("click", (event) => {
+        const card = event.target.closest("a.card");
+        if (!card) return;
+
+        if (
+          card.getAttribute("data-private") === "true" &&
+          !window.currentUser
+        ) {
+          event.preventDefault();
+          event.stopPropagation();
+          window.pendingAuthUrl = card.getAttribute("href");
+          window.showAuthModal();
+        }
+      });
 
       fetch(API_URL)
         .then((res) => res.json())

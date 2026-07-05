@@ -76,6 +76,13 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'isPrivate',
+      title: 'Private Post',
+      description: 'Show this post with a lock icon and require access before opening.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
       name: 'excerpt',
       title: 'Excerpt',
       type: 'text',

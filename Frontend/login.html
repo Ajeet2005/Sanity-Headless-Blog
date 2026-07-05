@@ -1,9 +1,9 @@
-<!-- <!doctype html>
-<html>
+<!doctype html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login</title>
+    <title>Portal Login</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -50,11 +50,10 @@
       <h2>Portal Login</h2>
       <input id="email" placeholder="Email" />
       <input id="password" type="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
+      <button id="login-btn">Login</button>
       <p id="status">Sign in with your Firebase account.</p>
     </div>
 
-    <!-- Firebase authentication module temporarily disabled for current testing phase:
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
       import {
@@ -65,23 +64,32 @@
 
       const firebaseConfig = {
         apiKey: "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0",
-        authDomain: "sanity-blog-auth.firebaseapp.com",
+        authDomain:
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "localhost"
+            ? window.location.hostname
+            : "sanity-blog-auth.firebaseapp.com",
         projectId: "sanity-blog-auth",
       };
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get("redirect") || "index.html";
+      const status = document.getElementById("status");
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      const loginBtn = document.getElementById("login-btn");
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          window.location.replace("index.html");
+          window.location.replace(redirect);
         }
       });
 
-      window.login = async function login() {
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-        const status = document.getElementById("status");
+      loginBtn.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
         if (!email || !password) {
           status.textContent = "Please enter both email and password.";
@@ -89,15 +97,18 @@
         }
 
         status.textContent = "Signing in...";
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Signing in...";
 
         try {
           await signInWithEmailAndPassword(auth, email, password);
-          window.location.replace("index.html");
+          window.location.replace(redirect);
         } catch (error) {
           status.textContent = error.message || "Sign-in failed.";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
         }
-      };
+      });
     </script>
-    <!-- -->
   </body>
-</html> --> -->
+</html>
