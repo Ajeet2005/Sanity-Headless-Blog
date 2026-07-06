@@ -360,7 +360,7 @@
       .card-lock {
         position: absolute;
         top: 10px;
-        right: 10px;
+        left: 10px;
         background: rgba(15, 23, 42, 0.8);
         color: white;
         width: 28px;
@@ -371,6 +371,22 @@
         font-size: 0.8rem;
         z-index: 2;
       }
+      .card-premium {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(250, 204, 21, 0.95);
+        color: #111;
+        font-size: 0.95rem;
+        font-weight: 700;
+        border-radius: 999px;
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        z-index: 2;
+      }
+      
       .card img {
         width: 100%;
         height: 160px;
@@ -813,8 +829,8 @@
       const DATASET = "production";
 
       const QUERY =
-        encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType == "blog")]{
-      _id, title, slug, publishedAt, _createdAt, excerpt, readingTime, isPrivate,
+        encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{
+      _id, title, slug, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
       "authorName": author->name,
       "authorImage": author->image.asset->url,
       "imageUrl": mainImage.asset->url,
@@ -882,8 +898,10 @@
         container.innerHTML = posts
           .map((post) => {
             const isPrivate = Boolean(post.isPrivate);
+            const isPremium = post.postType === "premium" || Boolean(post.isPremium);
             return `
-              <a class="card${isPrivate ? " private" : ""}" href="post.html?slug=${post.slug?.current}" data-private="${isPrivate}">
+              <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="post.html?slug=${post.slug?.current}" data-private="${isPrivate}">
+                ${isPremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                 ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                 ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" />` : ""}
                 <div class="card-body">

@@ -67,9 +67,11 @@ export default defineType({
       title: 'Post Type',
       type: 'string',
       initialValue: 'blog',
+      description: 'Choose whether this post is a normal blog, premium, or journal entry.',
       options: {
         list: [
           {title: 'Blog', value: 'blog'},
+          {title: 'Premium', value: 'premium'},
           {title: 'Journal', value: 'journal'},
         ],
         layout: 'dropdown',
@@ -79,6 +81,13 @@ export default defineType({
       name: 'isPrivate',
       title: 'Private Post',
       description: 'Show this post with a lock icon and require access before opening.',
+      type: 'boolean',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'isPremium',
+      title: 'Premium Post',
+      description: 'Show this post as premium. Premium posts display a preview and badge.',
       type: 'boolean',
       initialValue: false,
     }),

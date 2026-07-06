@@ -121,9 +121,75 @@
       }
 
       main {
+        position: relative;
         max-width: 760px;
         margin: 48px auto;
         padding: 0 24px;
+      }
+
+      .premium-badge {
+        position: absolute;
+        top: 22px;
+        left: 24px;
+        background: #facc15;
+        color: #111;
+        font-weight: 700;
+        padding: 8px 14px;
+        border-radius: 999px;
+        box-shadow: 0 10px 24px rgba(250, 204, 21, 0.2);
+        z-index: 2;
+      }
+
+      .premium-message {
+        margin-top: 24px;
+        padding: 18px 0 0;
+        border: none;
+        background: transparent;
+        color: var(--text);
+        font-size: 1rem;
+        line-height: 1.8;
+      }
+      .premium-message strong {
+        display: block;
+        font-size: 1.15rem;
+        margin-bottom: 14px;
+        color: var(--text);
+      }
+      .premium-message p {
+        margin: 0;
+        color: var(--text-muted);
+      }
+      .premium-message .cta-button {
+        margin-top: 18px;
+        border: none;
+        background: #111;
+        color: #fff;
+        border-radius: 999px;
+        padding: 12px 18px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: transform 0.18s ease, background 0.18s ease;
+      }
+      .premium-message .cta-button:hover {
+        transform: translateY(-1px);
+        background: #262626;
+      }
+      .premium-body {
+        position: relative;
+        overflow: hidden;
+        max-height: 380px;
+        padding-bottom: 20px;
+      }
+      .premium-body::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 140px;
+        background: linear-gradient(transparent, var(--surface));
+        pointer-events: none;
       }
 
       .cover {
@@ -584,7 +650,7 @@
       } else {
         const QUERY =
           encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
-        title, publishedAt, _createdAt, excerpt, readingTime, isPrivate,
+        title, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
         "authorName": author->name,
         "authorImage": author->image.asset->url,
         "imageUrl": mainImage.asset->url,
@@ -627,17 +693,43 @@
               .querySelector('meta[property="og:url"]')
               .setAttribute("content", window.location.href);
 
-            const bodyHtml = post.body
+            const paragraphs = post.body
               ? post.body
-                  .map((block) => {
-                    if (block._type === "block") {
-                      const text = block.children.map((c) => c.text).join("");
-                      return text ? `<p>${text}</p>` : "";
-                    }
-                    return "";
-                  })
-                  .join("")
-              : "";
+                  .filter((block) => block._type === "block")
+                  .map((block) => block.children.map((c) => c.text).join(""))
+                  .filter(Boolean)
+              : [];
+            const totalWords = paragraphs
+              .flatMap((paragraph) => paragraph.split(/\s+/).filter(Boolean)).length;
+            const isPremium = post.postType === "premium" || Boolean(post.isPremium);
+            const bodyHtml = isPremium
+              ? (() => {
+                  let count = 0;
+                  const preview = [];
+                  const previewLimit = 180;
+                  for (const paragraph of paragraphs) {
+                    const words = paragraph.split(/\s+/).filter(Boolean);
+                    if (!words.length) continue;
+                    const remaining = previewLimit - count;
+                    if (remaining <= 0) break;
+                    preview.push(words.slice(0, remaining).join(" "));
+                    count += words.length;
+                  }
+                  const previewHtml = preview.length
+                    ? preview.map((text) => `<p>${text}</p>`).join("")
+                    : "<p>This premium article is available only as a preview.</p>";
+                  return `
+                    <div class="premium-body">
+                      ${previewHtml}
+                    </div>
+                    <div class="premium-message">
+                      <strong>Become a member to read this story, and all of Anubhav.</strong>
+                      <p>Only premium readers can read the full article. Please subscribe to continue reading.</p>
+                      <button class="cta-button" onclick="window.showAuthModal && window.showAuthModal()">Subscribe</button>
+                    </div>
+                  `;
+                })()
+              : paragraphs.map((text) => `<p>${text}</p>`).join("");
 
             content.innerHTML = `
             ${post.isPrivate ? '<div class="private-badge">🔒 Private post</div>' : ""}
