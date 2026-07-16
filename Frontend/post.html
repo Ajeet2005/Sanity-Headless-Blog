@@ -1,655 +1,722 @@
 <!doctype html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="favicon.png" type="image/png+xml" />
-    <meta property="og:title" content="" />
-    <meta property="og:description" content="" />
-    <meta property="og:image" content="" />
-    <meta property="og:url" content="" />
-    <meta property="og:type" content="article" />
-    <title>Blog Post</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
 
-      :root {
-        --bg: #f9f9f9;
-        --surface: #ffffff;
-        --border: #e5e5e5;
-        --text: #1a1a1a;
-        --text-muted: #666;
-        --text-faint: #999;
-        --tag-border: #ddd;
-        --tag-color: #555;
-        --tag-hover-bg: #f0f0f0;
-        --toggle-bg: #f0f0f0;
-        --toggle-color: #333;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.png" type="image/png+xml" />
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:image" content="" />
+  <meta property="og:url" content="" />
+  <meta property="og:type" content="article" />
+  <title>Blog Post</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      [data-theme="dark"] {
-        --bg: #0f0f0f;
-        --surface: #1a1a1a;
-        --border: #2a2a2a;
-        --text: #e8e8e8;
-        --text-muted: #aaa;
-        --text-faint: #666;
-        --tag-border: #444;
-        --tag-color: #bbb;
-        --tag-hover-bg: #2a2a2a;
-        --toggle-bg: #2a2a2a;
-        --toggle-color: #e8e8e8;
-      }
+    :root {
+      --bg: #f9f9f9;
+      --surface: #ffffff;
+      --border: #e5e5e5;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --text-faint: #999;
+      --tag-border: #ddd;
+      --tag-color: #555;
+      --tag-hover-bg: #f0f0f0;
+      --toggle-bg: #f0f0f0;
+      --toggle-color: #333;
+    }
 
-      body {
-        font-family: "Segoe UI", sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        min-height: 100vh;
-        transition:
-          background 0.2s,
-          color 0.2s;
-      }
+    [data-theme="dark"] {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #aaa;
+      --text-faint: #666;
+      --tag-border: #444;
+      --tag-color: #bbb;
+      --tag-hover-bg: #2a2a2a;
+      --toggle-bg: #2a2a2a;
+      --toggle-color: #e8e8e8;
+    }
 
-      header {
-        background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 18px 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-      .header-left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-      }
-      .back-link,
-      .nav-link {
-        text-decoration: none;
-        color: var(--text);
-        font-size: 0.95rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .nav-links {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        padding: 4px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      }
-      .nav-link {
-        color: var(--text-muted);
-        font-weight: 500;
-        padding: 10px 18px;
-        border-radius: 999px;
-        border: 1px solid transparent;
-        transition: all 0.2s ease;
-      }
-      .back-link:hover,
-      .nav-link:hover {
-        color: var(--text);
-        background: var(--tag-hover-bg);
-      }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition:
+        background 0.2s,
+        color 0.2s;
+    }
 
-      .theme-toggle {
-        background: var(--toggle-bg);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 6px 14px;
-        cursor: pointer;
-        font-size: 0.82rem;
-        color: var(--toggle-color);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
-      }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-      main {
-        position: relative;
-        max-width: 760px;
-        margin: 48px auto;
-        padding: 0 24px;
-      }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
 
-      .premium-badge {
-        position: absolute;
-        top: 22px;
-        left: 24px;
-        background: #facc15;
-        color: #111;
-        font-weight: 700;
-        padding: 8px 14px;
-        border-radius: 999px;
-        box-shadow: 0 10px 24px rgba(250, 204, 21, 0.2);
-        z-index: 2;
-      }
+    .back-link,
+    .nav-link {
+      text-decoration: none;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-      .premium-message {
-        margin-top: 24px;
-        padding: 18px 0 0;
-        border: none;
-        background: transparent;
-        color: var(--text);
-        font-size: 1rem;
-        line-height: 1.8;
-      }
-      .premium-message strong {
-        display: block;
-        font-size: 1.15rem;
-        margin-bottom: 14px;
-        color: var(--text);
-      }
-      .premium-message p {
-        margin: 0;
-        color: var(--text-muted);
-      }
-      .premium-message .cta-button {
-        margin-top: 18px;
-        border: none;
-        background: #111;
-        color: #fff;
-        border-radius: 999px;
-        padding: 12px 18px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 0.95rem;
-        transition: transform 0.18s ease, background 0.18s ease;
-      }
-      .premium-message .cta-button:hover {
-        transform: translateY(-1px);
-        background: #262626;
-      }
-      .premium-body {
-        position: relative;
-        overflow: hidden;
-        max-height: 380px;
-        padding-bottom: 20px;
-      }
-      .premium-body::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 140px;
-        background: linear-gradient(transparent, var(--surface));
-        pointer-events: none;
-      }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
 
-      .cover {
-        width: 100%;
-        height: 360px;
-        object-fit: cover;
-        border-radius: 12px;
-        margin-bottom: 36px;
-        display: block;
-      }
+    .nav-link {
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
 
-      .post-cats {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-      }
-      .post-cat {
-        border: 1px solid var(--tag-border);
-        border-radius: 20px;
-        padding: 3px 12px;
-        font-size: 0.78rem;
-        color: var(--tag-color);
-        background: transparent;
-      }
+    .back-link:hover,
+    .nav-link:hover {
+      color: var(--text);
+      background: var(--tag-hover-bg);
+    }
 
-      h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1.3;
-        margin-bottom: 16px;
-        color: var(--text);
-      }
+    .theme-toggle {
+      background: var(--toggle-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: var(--toggle-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
 
-      .meta {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        flex-wrap: wrap;
-        margin-bottom: 36px;
-        padding-bottom: 24px;
-        border-bottom: 1px solid var(--border);
-      }
+    main {
+      position: relative;
+      max-width: 760px;
+      margin: 48px auto;
+      padding: 0 24px;
+    }
 
-      .author {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .author-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: var(--tag-hover-bg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-      .author-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .author-name {
-        font-size: 0.88rem;
-        color: var(--text-muted);
-        font-weight: 500;
-      }
+    .premium-badge {
+      position: absolute;
+      top: 22px;
+      left: 24px;
+      background: #facc15;
+      color: #111;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(250, 204, 21, 0.2);
+      z-index: 2;
+    }
 
-      .meta-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-left: auto;
-      }
-      .reading-time,
-      .date-str {
-        font-size: 0.82rem;
-        color: var(--text-faint);
-      }
+    .premium-message {
+      margin-top: 24px;
+      padding: 18px 0 0;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.8;
+    }
 
-      .body p {
-        line-height: 1.9;
-        margin-bottom: 20px;
-        color: var(--text);
-        font-size: 1rem;
-      }
+    .premium-message strong {
+      display: block;
+      font-size: 1.15rem;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
 
-      .tags-section {
-        margin-top: 48px;
-        padding-top: 24px;
-        border-top: 1px solid var(--border);
-      }
-      .tags-label {
-        font-size: 0.8rem;
-        color: var(--text-faint);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 12px;
-      }
-      .tags {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .tag {
-        border: 1px solid var(--tag-border);
-        border-radius: 20px;
-        padding: 4px 14px;
-        font-size: 0.82rem;
-        color: var(--tag-color);
-        background: transparent;
-        transition: all 0.15s;
-      }
-      .tag:hover {
-        border-color: var(--text);
-        color: var(--text);
-        background: var(--tag-hover-bg);
-        cursor: pointer;
-      }
+    .premium-message p {
+      margin: 0;
+      color: var(--text-muted);
+    }
 
-      #status {
-        text-align: center;
-        color: var(--text-faint);
-        margin-top: 80px;
-      }
+    .premium-message .cta-button {
+      margin-top: 18px;
+      border: none;
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+      transition: transform 0.18s ease, background 0.18s ease;
+    }
 
-      .private-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(37, 99, 235, 0.1);
-        color: #2563eb;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-bottom: 16px;
-      }
+    .premium-message .cta-button:hover {
+      transform: translateY(-1px);
+      background: #262626;
+    }
 
-      .app-shell {
-        transition:
-          opacity 0.2s ease,
-          filter 0.2s ease;
-      }
-      .app-shell.dimmed {
-        opacity: 0.35;
-        filter: blur(1.5px);
-        pointer-events: none;
-      }
+    .premium-body {
+      position: relative;
+      overflow: hidden;
+      max-height: 380px;
+      padding-bottom: 20px;
+    }
 
-      .auth-modal {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(9, 14, 24, 0.68);
-        backdrop-filter: blur(6px);
-        z-index: 1000;
-      }
-      .auth-modal.hidden {
-        display: none;
-      }
-      .auth-card {
-        width: min(100%, 420px);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
-        padding: 24px;
-      }
-      .auth-card h3 {
-        font-size: 1.2rem;
-        margin-bottom: 8px;
-      }
-      .auth-card p {
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        margin-bottom: 16px;
-        line-height: 1.5;
-      }
-      .auth-card input {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid var(--border);
-        margin-bottom: 10px;
-        font-size: 0.95rem;
-      }
-      .auth-card button {
-        width: 100%;
-        border: none;
-        border-radius: 10px;
-        background: #2563eb;
-        color: white;
-        padding: 10px 12px;
-        font-weight: 600;
-        cursor: pointer;
-        margin-top: 4px;
-      }
-      .auth-card .secondary {
-        margin-top: 10px;
-        text-align: center;
-        color: var(--text-faint);
-        font-size: 0.9rem;
-        cursor: pointer;
-      }
-      .auth-status {
-        min-height: 20px;
-        margin-top: 10px;
-        color: #dc2626;
-        font-size: 0.9rem;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="app-shell" id="app-shell">
-      <header>
-        <div class="header-left">
-          <a class="back-link" href="index.html">← Back to Blog</a>
-          <nav class="nav-links"></nav>
-        </div>
-        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
-          🌙 Dark
-        </button>
-      </header>
+    .premium-body::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 140px;
+      background: linear-gradient(transparent, var(--surface));
+      pointer-events: none;
+    }
 
-      <main id="content">
-        <!-- <p id="status">Loading post...</p> -->
-      </main>
-    </div>
+    .cover {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 36px;
+      display: block;
+    }
 
-    <div id="auth-modal" class="auth-modal hidden">
-      <div class="auth-card">
-        <h3>Secure access</h3>
-        <p>Sign in to view this private post.</p>
-        <input id="auth-email" placeholder="Email" />
-        <input id="auth-password" type="password" placeholder="Password" />
-        <button id="auth-submit">Unlock</button>
-        <div class="secondary" id="auth-cancel">Continue browsing</div>
-        <div class="auth-status" id="auth-status"></div>
+    .post-cats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .post-cat {
+      border: 1px solid var(--tag-border);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      color: var(--tag-color);
+      background: transparent;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--tag-hover-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .author-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .author-name {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .meta-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-left: auto;
+    }
+
+    .reading-time,
+    .date-str {
+      font-size: 0.82rem;
+      color: var(--text-faint);
+    }
+
+    .body p {
+      line-height: 1.9;
+      margin-bottom: 20px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .tags-section {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .tags-label {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      border: 1px solid var(--tag-border);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.82rem;
+      color: var(--tag-color);
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .tag:hover {
+      border-color: var(--text);
+      color: var(--text);
+      background: var(--tag-hover-bg);
+      cursor: pointer;
+    }
+
+    #status {
+      text-align: center;
+      color: var(--text-faint);
+      margin-top: 80px;
+    }
+
+    .private-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: #2563eb;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .app-shell {
+      transition:
+        opacity 0.2s ease,
+        filter 0.2s ease;
+    }
+
+    .app-shell.dimmed {
+      opacity: 0.35;
+      filter: blur(1.5px);
+      pointer-events: none;
+    }
+
+    .auth-modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(9, 14, 24, 0.68);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+    }
+
+    .auth-modal.hidden {
+      display: none;
+    }
+
+    .auth-card {
+      width: min(100%, 420px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+      padding: 24px;
+    }
+
+    .auth-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+
+    .auth-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .auth-card input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .auth-card button {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      padding: 10px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .auth-card .secondary {
+      margin-top: 10px;
+      text-align: center;
+      color: var(--text-faint);
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .auth-status {
+      min-height: 20px;
+      margin-top: 10px;
+      color: #dc2626;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell" id="app-shell">
+    <header>
+      <div class="header-left">
+        <a class="back-link" href="index.html">← Back to Blog</a>
+        <nav class="nav-links"></nav>
       </div>
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
+        🌙 Dark
+      </button>
+    </header>
+
+    <main id="content">
+      <!-- <p id="status">Loading post...</p> -->
+    </main>
+  </div>
+
+  <div id="auth-modal" class="auth-modal hidden">
+    <div class="auth-card">
+      <h3>Secure access</h3>
+      <p>Sign in to view this private post.</p>
+      <input id="auth-email" placeholder="Email" />
+      <input id="auth-password" type="password" placeholder="Password" />
+      <button id="auth-submit">Unlock</button>
+      <div class="secondary" id="auth-cancel">Continue browsing</div>
+      <div class="auth-status" id="auth-status"></div>
     </div>
+  </div>
 
-    <script type="module">
-      const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
-      const appShell = document.getElementById("app-shell");
-      const modal = document.getElementById("auth-modal");
-      const emailInput = document.getElementById("auth-email");
-      const passwordInput = document.getElementById("auth-password");
-      const submitBtn = document.getElementById("auth-submit");
-      const cancelBtn = document.getElementById("auth-cancel");
-      const statusEl = document.getElementById("auth-status");
-      let authPromptOpen = false;
-      let authFlowInProgress = false;
+  <!-- Khalti Premium Blog Subscription Modals -->
+  <div id="subscribe-modal" class="auth-modal hidden">
+    <div class="auth-card">
+      <h3 style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: #facc15;">★</span> Subscribe to Premium
+      </h3>
+      <p>Unlock this and all other premium articles on the blog.</p>
+      <div style="margin: 14px 0; font-weight: 600; color: var(--text);">Price: 10 NPR (Test payment)</div>
+      <input id="sub-email" placeholder="Enter your email address" type="email" required />
+      <button id="sub-submit" style="background: #10b981;">Pay with Khalti</button>
+      <div class="secondary" id="sub-verify-trigger">Already subscribed? Verify Email</div>
+      <div class="secondary" id="sub-cancel">Cancel</div>
+      <div class="auth-status" id="sub-status"></div>
+    </div>
+  </div>
 
-      function isLocalAccessGranted() {
-        const expiry = Number(
-          localStorage.getItem("privateAccessExpiresAt") || 0,
-        );
-        const hasToken = Boolean(localStorage.getItem("firebaseAuthToken"));
-        const stillValid = Date.now() < expiry || expiry === 0;
-        return (
-          (localStorage.getItem("privateAccess") === "granted" || hasToken) &&
-          stillValid
-        );
+  <div id="verify-modal" class="auth-modal hidden">
+    <div class="auth-card">
+      <h3>Verify Subscription</h3>
+      <p>Enter the email address you used to subscribe to verify your access.</p>
+      <input id="verify-email" placeholder="Enter your email address" type="email" required />
+      <button id="verify-submit" style="background: #2563eb;">Verify & Unlock</button>
+      <div class="secondary" id="verify-cancel">Back to Subscribe</div>
+      <div class="auth-status" id="verify-status"></div>
+    </div>
+  </div>
+
+  <!-- Payment Notifications -->
+  <!-- <div id="payment-notification" class="hidden" style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-weight: 600;">
+      🎉 Payment successful! Premium content is now unlocked.
+    </div> -->
+
+  <!-- <div id="payment-fail-notification" class="hidden" style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 12px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-weight: 600;">
+      ❌ Payment failed or cancelled. Please try again. -->
+  </div>
+
+  <script type="module">
+    const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
+    const appShell = document.getElementById("app-shell");
+    const modal = document.getElementById("auth-modal");
+    const emailInput = document.getElementById("auth-email");
+    const passwordInput = document.getElementById("auth-password");
+    const submitBtn = document.getElementById("auth-submit");
+    const cancelBtn = document.getElementById("auth-cancel");
+    const statusEl = document.getElementById("auth-status");
+    let authPromptOpen = false;
+    let authFlowInProgress = false;
+
+    function isLocalAccessGranted() {
+      const expiry = Number(
+        localStorage.getItem("privateAccessExpiresAt") || 0,
+      );
+      const hasToken = Boolean(localStorage.getItem("firebaseAuthToken"));
+      const stillValid = Date.now() < expiry || expiry === 0;
+      return (
+        (localStorage.getItem("privateAccess") === "granted" || hasToken) &&
+        stillValid
+      );
+    }
+
+    function grantLocalAccess(email, idToken, uid) {
+      const expiresAt = Date.now() + 60 * 60 * 1000;
+      localStorage.setItem("privateAccess", "granted");
+      localStorage.setItem("privateAccessExpiresAt", String(expiresAt));
+      localStorage.setItem("firebaseAuthToken", idToken || "");
+      localStorage.setItem("firebaseUserEmail", email || "");
+      localStorage.setItem("firebaseUserId", uid || "");
+      window.currentUser = {
+        uid: uid || "local-access",
+        email: email || "local",
+        idToken: idToken || "",
+      };
+    }
+
+    async function signInWithFirebase(email, password) {
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            returnSecureToken: true,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error?.message || "Sign-in failed.");
       }
 
-      function grantLocalAccess(email, idToken, uid) {
-        const expiresAt = Date.now() + 60 * 60 * 1000;
-        localStorage.setItem("privateAccess", "granted");
-        localStorage.setItem("privateAccessExpiresAt", String(expiresAt));
-        localStorage.setItem("firebaseAuthToken", idToken || "");
-        localStorage.setItem("firebaseUserEmail", email || "");
-        localStorage.setItem("firebaseUserId", uid || "");
+      return data;
+    }
+
+    function showModal() {
+      if (isLocalAccessGranted()) {
         window.currentUser = {
-          uid: uid || "local-access",
-          email: email || "local",
-          idToken: idToken || "",
+          uid: localStorage.getItem("firebaseUserId") || "local-access",
+          email: localStorage.getItem("firebaseUserEmail") || "local",
+          idToken: localStorage.getItem("firebaseAuthToken") || "",
         };
-      }
-
-      async function signInWithFirebase(email, password) {
-        const response = await fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseApiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email,
-              password,
-              returnSecureToken: true,
-            }),
-          },
-        );
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error?.message || "Sign-in failed.");
+        if (window.pendingAuthUrl) {
+          window.location.href = window.pendingAuthUrl;
         }
-
-        return data;
+        return;
       }
 
-      function showModal() {
-        if (isLocalAccessGranted()) {
-          window.currentUser = {
-            uid: localStorage.getItem("firebaseUserId") || "local-access",
-            email: localStorage.getItem("firebaseUserEmail") || "local",
-            idToken: localStorage.getItem("firebaseAuthToken") || "",
-          };
-          if (window.pendingAuthUrl) {
-            window.location.href = window.pendingAuthUrl;
-          }
+      modal.classList.remove("hidden");
+      appShell.classList.add("dimmed");
+      document.body.style.overflow = "hidden";
+      authPromptOpen = true;
+      requestAnimationFrame(() => emailInput.focus());
+    }
+
+    function hideModal() {
+      modal.classList.add("hidden");
+      appShell.classList.remove("dimmed");
+      document.body.style.overflow = "";
+      statusEl.textContent = "";
+      authPromptOpen = false;
+    }
+
+    window.showAuthModal = showModal;
+    window.hideAuthModal = hideModal;
+    window.pendingAuthUrl = null;
+    window.currentUser = isLocalAccessGranted()
+      ? {
+        uid: localStorage.getItem("firebaseUserId") || "local-access",
+        email: localStorage.getItem("firebaseUserEmail") || "local",
+        idToken: localStorage.getItem("firebaseAuthToken") || "",
+      }
+      : null;
+
+    async function handleSignIn() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      statusEl.textContent = "";
+
+      if (!email || !password) {
+        statusEl.textContent = "Please enter both email and password.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Signing in...";
+      authFlowInProgress = true;
+
+      try {
+        const data = await signInWithFirebase(email, password);
+        grantLocalAccess(email, data.idToken, data.localId);
+        authFlowInProgress = false;
+        if (window.pendingAuthUrl) {
+          window.location.href = window.pendingAuthUrl;
           return;
         }
-
-        modal.classList.remove("hidden");
-        appShell.classList.add("dimmed");
-        document.body.style.overflow = "hidden";
-        authPromptOpen = true;
-        requestAnimationFrame(() => emailInput.focus());
+        hideModal();
+      } catch (error) {
+        authFlowInProgress = false;
+        statusEl.textContent = error.message || "Sign-in failed.";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Unlock";
       }
+    }
 
-      function hideModal() {
-        modal.classList.add("hidden");
-        appShell.classList.remove("dimmed");
-        document.body.style.overflow = "";
-        statusEl.textContent = "";
-        authPromptOpen = false;
+    function handleInputKeydown(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleSignIn();
       }
+    }
 
-      window.showAuthModal = showModal;
-      window.hideAuthModal = hideModal;
+    emailInput.addEventListener("keydown", handleInputKeydown);
+    passwordInput.addEventListener("keydown", handleInputKeydown);
+    submitBtn.addEventListener("click", handleSignIn);
+    cancelBtn.addEventListener("click", () => {
       window.pendingAuthUrl = null;
-      window.currentUser = isLocalAccessGranted()
-        ? {
-            uid: localStorage.getItem("firebaseUserId") || "local-access",
-            email: localStorage.getItem("firebaseUserEmail") || "local",
-            idToken: localStorage.getItem("firebaseAuthToken") || "",
-          }
-        : null;
-
-      async function handleSignIn() {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-        statusEl.textContent = "";
-
-        if (!email || !password) {
-          statusEl.textContent = "Please enter both email and password.";
-          return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Signing in...";
-        authFlowInProgress = true;
-
-        try {
-          const data = await signInWithFirebase(email, password);
-          grantLocalAccess(email, data.idToken, data.localId);
-          authFlowInProgress = false;
-          if (window.pendingAuthUrl) {
-            window.location.href = window.pendingAuthUrl;
-            return;
-          }
-          hideModal();
-        } catch (error) {
-          authFlowInProgress = false;
-          statusEl.textContent = error.message || "Sign-in failed.";
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Unlock";
-        }
-      }
-
-      function handleInputKeydown(event) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          handleSignIn();
-        }
-      }
-
-      emailInput.addEventListener("keydown", handleInputKeydown);
-      passwordInput.addEventListener("keydown", handleInputKeydown);
-      submitBtn.addEventListener("click", handleSignIn);
-      cancelBtn.addEventListener("click", () => {
+      hideModal();
+    });
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
         window.pendingAuthUrl = null;
         hideModal();
+      }
+    });
+
+    if (authPromptOpen && window.currentUser && !authFlowInProgress) {
+      hideModal();
+    }
+  </script>
+
+  <script>
+    const PROJECT_ID = "xsd8o1za";
+    const DATASET = "production";
+
+    // Theme
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.getAttribute("data-theme") === "dark";
+      html.setAttribute("data-theme", isDark ? "light" : "dark");
+      document.getElementById("theme-btn").textContent = isDark
+        ? "🌙 Dark"
+        : "☀️ Light";
+      localStorage.setItem("theme", isDark ? "light" : "dark");
+    }
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    if (savedTheme === "dark")
+      document.getElementById("theme-btn").textContent = "☀️ Light";
+
+    function initials(name) {
+      if (!name) return "?";
+      return name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 60) return `${minutes} min ago`;
+      if (hours < 24) return `${hours} hr ago`;
+
+      return new Date(dateStr).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) {
-          window.pendingAuthUrl = null;
-          hideModal();
-        }
-      });
+    }
 
-      if (authPromptOpen && window.currentUser && !authFlowInProgress) {
-        hideModal();
-      }
-    </script>
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get("slug");
 
-    <script>
-      const PROJECT_ID = "xsd8o1za";
-      const DATASET = "production";
-
-      // Theme
-      function toggleTheme() {
-        const html = document.documentElement;
-        const isDark = html.getAttribute("data-theme") === "dark";
-        html.setAttribute("data-theme", isDark ? "light" : "dark");
-        document.getElementById("theme-btn").textContent = isDark
-          ? "🌙 Dark"
-          : "☀️ Light";
-        localStorage.setItem("theme", isDark ? "light" : "dark");
-      }
-      const savedTheme = localStorage.getItem("theme") || "light";
-      document.documentElement.setAttribute("data-theme", savedTheme);
-      if (savedTheme === "dark")
-        document.getElementById("theme-btn").textContent = "☀️ Light";
-
-      function initials(name) {
-        if (!name) return "?";
-        return name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase()
-          .slice(0, 2);
-      }
-
-      function timeAgo(dateStr) {
-        const diff = Date.now() - new Date(dateStr).getTime();
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (minutes < 60) return `${minutes} min ago`;
-        if (hours < 24) return `${hours} hr ago`;
-
-        return new Date(dateStr).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      const slug = params.get("slug");
-
-      if (!slug) {
-        document.getElementById("status").textContent = "Post not found.";
-      } else {
-        const QUERY =
-          encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
+    if (!slug) {
+      document.getElementById("status").textContent = "Post not found.";
+    } else {
+      const QUERY =
+        encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
         title, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
         "authorName": author->name,
         "authorImage": author->image.asset->url,
@@ -659,88 +726,132 @@
         tags, body
       }`);
 
-        const URL = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
+      const URL = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
 
-        fetch(URL)
-          .then((res) => res.json())
-          .then((data) => {
-            const post = data.result;
-            const content = document.getElementById("content");
+      // Check if redirected with payment success/failure
+      const paymentParam = params.get('payment');
+      const emailParam = params.get('email');
+      if (paymentParam === 'success' && emailParam) {
+        localStorage.setItem('premiumSubscriberEmail', emailParam.toLowerCase());
+        const notif = document.getElementById('payment-notification');
+        if (notif) {
+          notif.classList.remove('hidden');
+          setTimeout(() => notif.classList.add('hidden'), 5000);
+        }
+        // Remove query parameters from URL without reloading
+        const newUrl = window.location.pathname + '?slug=' + slug;
+        window.history.replaceState({}, document.title, newUrl);
+      } else if (paymentParam === 'failed') {
+        const failNotif = document.getElementById('payment-fail-notification');
+        if (failNotif) {
+          failNotif.classList.remove('hidden');
+          setTimeout(() => failNotif.classList.add('hidden'), 5000);
+        }
+        const newUrl = window.location.pathname + '?slug=' + slug;
+        window.history.replaceState({}, document.title, newUrl);
+      }
 
-            if (!post) {
-              content.innerHTML = '<p id="status">Post not found.</p>';
-              return;
+      fetch(URL)
+        .then((res) => res.json())
+        .then(async (data) => {
+          const post = data.result;
+          const content = document.getElementById("content");
+
+          if (!post) {
+            content.innerHTML = '<p id="status">Post not found.</p>';
+            return;
+          }
+
+          if (post.isPrivate && !window.currentUser) {
+            window.pendingAuthUrl = window.location.href;
+            window.showAuthModal();
+            return;
+          }
+
+          document.title = post.title;
+
+          document
+            .querySelector('meta[property="og:title"]')
+            .setAttribute("content", post.title || "");
+          document
+            .querySelector('meta[property="og:description"]')
+            .setAttribute("content", post.excerpt || "");
+          document
+            .querySelector('meta[property="og:image"]')
+            .setAttribute("content", post.ogImageUrl || "");
+          document
+            .querySelector('meta[property="og:url"]')
+            .setAttribute("content", window.location.href);
+
+          const paragraphs = post.body
+            ? post.body
+              .filter((block) => block._type === "block")
+              .map((block) => block.children.map((c) => c.text).join(""))
+              .filter(Boolean)
+            : [];
+          const totalWords = paragraphs
+            .flatMap((paragraph) => paragraph.split(/\s+/).filter(Boolean)).length;
+          const isPremium = post.postType === "premium" || Boolean(post.isPremium);
+
+          // Check subscription status
+          let isUserSubscribed = false;
+          const subEmail = localStorage.getItem('premiumSubscriberEmail');
+          if (isPremium && subEmail) {
+            try {
+              const subRes = await fetch(`/api/subscription/status?email=${encodeURIComponent(subEmail)}`);
+              if (subRes.ok) {
+                const subData = await subRes.json();
+                if (subData.subscribed) {
+                  isUserSubscribed = true;
+                } else {
+                  localStorage.removeItem('premiumSubscriberEmail');
+                }
+              }
+            } catch (err) {
+              console.error("Error verifying subscription:", err);
             }
+          }
 
-            if (post.isPrivate && !window.currentUser) {
-              window.pendingAuthUrl = window.location.href;
-              window.showAuthModal();
-              return;
-            }
+          const isUnlocked = !isPremium || isUserSubscribed;
 
-            document.title = post.title;
-
-            document
-              .querySelector('meta[property="og:title"]')
-              .setAttribute("content", post.title || "");
-            document
-              .querySelector('meta[property="og:description"]')
-              .setAttribute("content", post.excerpt || "");
-            document
-              .querySelector('meta[property="og:image"]')
-              .setAttribute("content", post.ogImageUrl || "");
-            document
-              .querySelector('meta[property="og:url"]')
-              .setAttribute("content", window.location.href);
-
-            const paragraphs = post.body
-              ? post.body
-                  .filter((block) => block._type === "block")
-                  .map((block) => block.children.map((c) => c.text).join(""))
-                  .filter(Boolean)
-              : [];
-            const totalWords = paragraphs
-              .flatMap((paragraph) => paragraph.split(/\s+/).filter(Boolean)).length;
-            const isPremium = post.postType === "premium" || Boolean(post.isPremium);
-            const bodyHtml = isPremium
-              ? (() => {
-                  let count = 0;
-                  const preview = [];
-                  const previewLimit = 180;
-                  for (const paragraph of paragraphs) {
-                    const words = paragraph.split(/\s+/).filter(Boolean);
-                    if (!words.length) continue;
-                    const remaining = previewLimit - count;
-                    if (remaining <= 0) break;
-                    preview.push(words.slice(0, remaining).join(" "));
-                    count += words.length;
-                  }
-                  const previewHtml = preview.length
-                    ? preview.map((text) => `<p>${text}</p>`).join("")
-                    : "<p>This premium article is available only as a preview.</p>";
-                  return `
+          const bodyHtml = isUnlocked
+            ? paragraphs.map((text) => `<p>${text}</p>`).join("")
+            : (() => {
+              let count = 0;
+              const preview = [];
+              const previewLimit = 180;
+              for (const paragraph of paragraphs) {
+                const words = paragraph.split(/\s+/).filter(Boolean);
+                if (!words.length) continue;
+                const remaining = previewLimit - count;
+                if (remaining <= 0) break;
+                preview.push(words.slice(0, remaining).join(" "));
+                count += words.length;
+              }
+              const previewHtml = preview.length
+                ? preview.map((text) => `<p>${text}</p>`).join("")
+                : "<p>This premium article is available only as a preview.</p>";
+              return `
                     <div class="premium-body">
                       ${previewHtml}
                     </div>
                     <div class="premium-message">
                       <strong>Become a member to read this story, and all of Anubhav.</strong>
                       <p>Only premium readers can read the full article. Please subscribe to continue reading.</p>
-                      <button class="cta-button" onclick="window.showAuthModal && window.showAuthModal()">Subscribe</button>
+                      <button class="cta-button" onclick="window.showSubscribeModal && window.showSubscribeModal()">Subscribe</button>
                     </div>
                   `;
-                })()
-              : paragraphs.map((text) => `<p>${text}</p>`).join("");
+            })();
 
-            content.innerHTML = `
+          content.innerHTML = `
             ${post.isPrivate ? '<div class="private-badge">🔒 Private post</div>' : ""}
             ${post.imageUrl ? `<img class="cover" src="${post.imageUrl}" alt="${post.title}" />` : ""}
-            ${
-              post.categories?.length
-                ? `
+            ${post.categories?.length
+              ? `
               <div class="post-cats">
                 ${post.categories.map((cat) => `<span class="post-cat">${cat}</span>`).join("")}
               </div>`
-                : ""
+              : ""
             }
             <h1>${post.title}</h1>
             <div class="meta">
@@ -756,24 +867,146 @@
               </div>
             </div>
             <div class="body">${bodyHtml}</div>
-            ${
-              post.tags?.length
-                ? `
+            ${post.tags?.length
+              ? `
               <div class="tags-section">
                 <p class="tags-label"></p>
                 <div class="tags">
                   ${post.tags.map((tag) => `<span class="tag">#${tag}</span>`).join("")}
                 </div>
               </div>`
-                : ""
+              : ""
             }
           `;
-          })
-          .catch(() => {
-            document.getElementById("status").textContent =
-              "Failed to load post.";
-          });
+        })
+        .catch(() => {
+          document.getElementById("status").textContent =
+            "Failed to load post.";
+        });
+    }
+
+    // Modals setup
+    const subscribeModal = document.getElementById("subscribe-modal");
+    const verifyModal = document.getElementById("verify-modal");
+    const appShellEl = document.getElementById("app-shell");
+
+    function showSubscribeModal() {
+      subscribeModal.classList.remove("hidden");
+      appShellEl.classList.add("dimmed");
+      document.body.style.overflow = "hidden";
+      document.getElementById("sub-email").focus();
+    }
+
+    function hideSubscribeModal() {
+      subscribeModal.classList.add("hidden");
+      appShellEl.classList.remove("dimmed");
+      document.body.style.overflow = "";
+      document.getElementById("sub-status").textContent = "";
+    }
+
+    function showVerifyModal() {
+      subscribeModal.classList.add("hidden");
+      verifyModal.classList.remove("hidden");
+      document.getElementById("verify-email").focus();
+    }
+
+    function hideVerifyModal() {
+      verifyModal.classList.add("hidden");
+      appShellEl.classList.remove("dimmed");
+      document.body.style.overflow = "";
+      document.getElementById("verify-status").textContent = "";
+    }
+
+    window.showSubscribeModal = showSubscribeModal;
+    window.hideSubscribeModal = hideSubscribeModal;
+    window.showVerifyModal = showVerifyModal;
+    window.hideVerifyModal = hideVerifyModal;
+
+    // Click event listeners
+    document.getElementById("sub-cancel").addEventListener("click", hideSubscribeModal);
+    document.getElementById("sub-verify-trigger").addEventListener("click", showVerifyModal);
+    document.getElementById("verify-cancel").addEventListener("click", () => {
+      verifyModal.classList.add("hidden");
+      subscribeModal.classList.remove("hidden");
+      document.getElementById("sub-email").focus();
+    });
+
+    // Handle subscription payment initiation
+    document.getElementById("sub-submit").addEventListener("click", async () => {
+      const email = document.getElementById("sub-email").value.trim();
+      const statusEl = document.getElementById("sub-status");
+      statusEl.textContent = "";
+
+      if (!email) {
+        statusEl.textContent = "Please enter your email.";
+        return;
       }
-    </script>
-  </body>
+
+      const submitBtn = document.getElementById("sub-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Initiating payment...";
+
+      try {
+        const res = await fetch("/api/payment/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email,
+            amount: 1000, // 10 NPR = 1000 Paisa for testing
+            returnUrl: window.location.href
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.payment_url) {
+          window.location.href = data.payment_url;
+        } else {
+          statusEl.textContent = data.error || "Payment initiation failed.";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Pay with Khalti";
+        }
+      } catch (err) {
+        statusEl.textContent = "Network error. Please try again.";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Pay with Khalti";
+      }
+    });
+
+    // Handle subscription verification
+    document.getElementById("verify-submit").addEventListener("click", async () => {
+      const email = document.getElementById("verify-email").value.trim();
+      const statusEl = document.getElementById("verify-status");
+      statusEl.textContent = "";
+
+      if (!email) {
+        statusEl.textContent = "Please enter your email.";
+        return;
+      }
+
+      const submitBtn = document.getElementById("verify-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Verifying...";
+
+      try {
+        const res = await fetch(`/api/subscription/status?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (res.ok && data.subscribed) {
+          localStorage.setItem("premiumSubscriberEmail", email.toLowerCase());
+          hideVerifyModal();
+          window.location.reload();
+        } else {
+          statusEl.textContent = "No active subscription found for this email.";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Verify & Unlock";
+        }
+      } catch (err) {
+        statusEl.textContent = "Error verifying subscription. Please try again.";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Verify & Unlock";
+      }
+    });
+  </script>
+</body>
+
 </html>
