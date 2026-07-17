@@ -63,5 +63,40 @@ export default defineType({
       type: 'image',
       options: {hotspot: true},
     }),
+    defineArrayMember({
+      type: 'object',
+      name: 'codeBlock',
+      title: 'Code Block',
+      fields: [
+        {
+          name: 'code',
+          title: 'Code',
+          type: 'text',
+          rows: 10,
+        },
+        {
+          name: 'language',
+          title: 'Language',
+          type: 'string',
+          initialValue: 'javascript',
+          options: {
+            list: [
+              { title: 'HTML', value: 'html' },
+              { title: 'CSS', value: 'css' },
+              { title: 'JavaScript', value: 'javascript' },
+              { title: 'TypeScript', value: 'typescript' },
+              { title: 'Python', value: 'python' },
+              { title: 'JSON', value: 'json' },
+              { title: 'Bash', value: 'bash' },
+            ]
+          }
+        },
+        {
+          name: 'filename',
+          title: 'Filename (Optional)',
+          type: 'string',
+        }
+      ]
+    }),
   ],
 })
