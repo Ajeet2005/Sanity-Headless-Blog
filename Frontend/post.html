@@ -63,8 +63,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
+      position: relative;
       z-index: 100;
     }
 
@@ -297,6 +296,7 @@
       margin-bottom: 20px;
       color: var(--text);
       font-size: 1rem;
+      text-align: justify;
     }
 
     .tags-section {
@@ -438,6 +438,354 @@
       margin-top: 10px;
       color: #dc2626;
       font-size: 0.9rem;
+    }
+
+    /* Author Top Details Styles */
+    .author-meta-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-meta-top .author-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--tag-hover-bg);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .author-meta-top .author-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .author-meta-top .author-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .author-meta-top .author-name {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .author-meta-top .author-bio {
+      font-size: 0.70rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Author Card Bottom Styles */
+    .author-card-bottom {
+      margin-top: 40px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--surface);
+    }
+
+    .author-card-bottom h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .author-card-bottom .author-details-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .author-card-bottom .author-avatar-large {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--tag-hover-bg);
+      font-size: 1.1rem;
+      color: var(--text-muted);
+    }
+
+    .author-card-bottom .author-avatar-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .author-card-bottom .author-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .author-card-bottom .author-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .author-card-bottom .author-bio {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Share Section Styles */
+    .share-section {
+      margin-top: 40px;
+      margin-bottom: 24px;
+    }
+
+    .share-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .share-icon {
+      color: var(--text);
+    }
+
+    .share-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      background: var(--surface);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .share-btn:hover {
+      background: var(--tag-hover-bg);
+      border-color: var(--text);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    /* Solid Divider Line */
+    .solid-divider {
+      border: 0;
+      height: 1px;
+      background-color: var(--border);
+      margin: 32px 0;
+    }
+
+    /* Read More Section Styles */
+    .read-more-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .read-more-section h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .read-more-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .read-more-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--card-hover-border);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    .card-lock {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      z-index: 2;
+    }
+
+    .card-premium {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(250, 204, 21, 0.95);
+      color: #111;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Portable Text Formatting Styles */
+    .body h1,
+    .body h2,
+    .body h3,
+    .body h4 {
+      color: var(--text);
+      margin-top: 32px;
+      margin-bottom: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .body h1 {
+      font-size: 1.8rem;
+    }
+
+    .body h2 {
+      font-size: 1.5rem;
+    }
+
+    .body h3 {
+      font-size: 1.25rem;
+    }
+
+    .body h4 {
+      font-size: 1.1rem;
+    }
+
+    .body blockquote {
+      border-left: 4px solid #2563eb;
+      border: 1px solid var(--border);
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin: 28px 0;
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+      background: var(--tag-hover-bg);
+    }
+
+    .code-block-container {
+      margin: 24px 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e1e1e;
+    }
+
+    .code-filename {
+      background: #2d2d2d;
+      color: #c5c5c5;
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-family: Consolas, Monaco, monospace;
+      border-bottom: 1px solid #3d3d3d;
+    }
+
+    .code-block-container pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .code-block-container code {
+      font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+      font-size: 0.9rem;
+      color: #d4d4d4;
+      line-height: 1.5;
+      display: block;
+    }
+
+    .body-image {
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 24px 0;
     }
   </style>
 </head>
@@ -709,6 +1057,126 @@
       });
     }
 
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderPortableText(blocks) {
+      if (!blocks || !Array.isArray(blocks)) return "";
+
+      return blocks.map(block => {
+        if (block._type === 'block') {
+          const style = block.style || 'normal';
+
+          const htmlContent = block.children ? block.children.map(child => {
+            let text = escapeHtml(child.text || '');
+            if (!text) return '';
+
+            if (child.marks && Array.isArray(child.marks)) {
+              child.marks.forEach(mark => {
+                if (mark === 'strong') {
+                  text = `<strong>${text}</strong>`;
+                } else if (mark === 'em') {
+                  text = `<em>${text}</em>`;
+                } else {
+                  const linkDef = block.markDefs && block.markDefs.find(def => def._key === mark);
+                  if (linkDef && linkDef.href) {
+                    text = `<a href="${escapeHtml(linkDef.href)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+                  }
+                }
+              });
+            }
+            return text;
+          }).join('') : '';
+
+          switch (style) {
+            case 'h1':
+              return `<h1>${htmlContent}</h1>`;
+            case 'h2':
+              return `<h2>${htmlContent}</h2>`;
+            case 'h3':
+              return `<h3>${htmlContent}</h3>`;
+            case 'h4':
+              return `<h4>${htmlContent}</h4>`;
+            case 'blockquote':
+              return `<blockquote>${htmlContent}</blockquote>`;
+            default:
+              return `<p>${htmlContent}</p>`;
+          }
+        } else if (block._type === 'codeBlock') {
+          const code = escapeHtml(block.code || '');
+          const language = escapeHtml(block.language || '');
+          const filename = block.filename ? `<div class="code-filename">${escapeHtml(block.filename)}</div>` : '';
+          return `
+            <div class="code-block-container">
+              ${filename}
+              <pre><code class="language-${language}">${code}</code></pre>
+            </div>
+          `;
+        } else if (block._type === 'image') {
+          const imageUrl = block.asset?.url;
+          if (imageUrl) {
+            return `<img class="body-image" src="${imageUrl}" alt="" />`;
+          }
+        }
+        return '';
+      }).join('');
+    }
+
+    function renderPortableTextPreview(blocks, wordLimit = 180) {
+      if (!blocks || !Array.isArray(blocks)) return "";
+      let count = 0;
+      const previewBlocks = [];
+
+      for (const block of blocks) {
+        if (block._type === 'block') {
+          const blockText = block.children ? block.children.map(c => c.text).join("") : "";
+          const words = blockText.split(/\s+/).filter(Boolean);
+          const remaining = wordLimit - count;
+          if (remaining <= 0) break;
+
+          if (words.length <= remaining) {
+            previewBlocks.push(block);
+            count += words.length;
+          } else {
+            let wordAccumulator = 0;
+            const newChildren = [];
+            if (block.children) {
+              for (const child of block.children) {
+                const childWords = (child.text || "").split(/\s+/).filter(Boolean);
+                const childRemaining = remaining - wordAccumulator;
+                if (childRemaining <= 0) break;
+
+                if (childWords.length <= childRemaining) {
+                  newChildren.push(child);
+                  wordAccumulator += childWords.length;
+                } else {
+                  const truncatedText = childWords.slice(0, childRemaining).join(" ") + "...";
+                  newChildren.push({
+                    ...child,
+                    text: truncatedText
+                  });
+                  wordAccumulator += childRemaining;
+                }
+              }
+            }
+            previewBlocks.push({
+              ...block,
+              children: newChildren
+            });
+            break;
+          }
+        }
+      }
+      return renderPortableText(previewBlocks);
+    }
+
     const params = new URLSearchParams(window.location.search);
     const slug = params.get("slug");
 
@@ -716,14 +1184,23 @@
       document.getElementById("status").textContent = "Post not found.";
     } else {
       const QUERY =
-        encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
-        title, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
-        "authorName": author->name,
-        "authorImage": author->image.asset->url,
-        "imageUrl": mainImage.asset->url,
-        "ogImageUrl": ogImage.asset->url,
-        "categories": categories[]->title,
-        tags, body
+        encodeURIComponent(`{
+        "post": *[_type == "post" && slug.current == "${slug}"][0]{
+          title, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
+          "authorName": author->name,
+          "authorImage": author->image.asset->url,
+          "authorBio": author->bio,
+          "imageUrl": mainImage.asset->url,
+          "ogImageUrl": ogImage.asset->url,
+          "categories": categories[]->title,
+          tags, body
+        },
+        "morePosts": *[_type == "post" && slug.current != "${slug}"] | order(_createdAt desc)[0...3]{
+          title, publishedAt, _createdAt, readingTime, postType, isPremium, isPrivate,
+          "imageUrl": mainImage.asset->url,
+          "slug": slug.current,
+          "authorName": author->name
+        }
       }`);
 
       const URL = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
@@ -754,7 +1231,8 @@
       fetch(URL)
         .then((res) => res.json())
         .then(async (data) => {
-          const post = data.result;
+          const post = data.result?.post;
+          const morePosts = data.result?.morePosts || [];
           const content = document.getElementById("content");
 
           if (!post) {
@@ -783,14 +1261,10 @@
             .querySelector('meta[property="og:url"]')
             .setAttribute("content", window.location.href);
 
-          const paragraphs = post.body
-            ? post.body
-              .filter((block) => block._type === "block")
-              .map((block) => block.children.map((c) => c.text).join(""))
-              .filter(Boolean)
-            : [];
-          const totalWords = paragraphs
-            .flatMap((paragraph) => paragraph.split(/\s+/).filter(Boolean)).length;
+          const authorBioText = post.authorBio && Array.isArray(post.authorBio)
+            ? post.authorBio.map(block => block.children ? block.children.map(c => c.text).join("") : "").join(" ")
+            : "Blogger, sharing insights and thoughts.";
+
           const isPremium = post.postType === "premium" || Boolean(post.isPremium);
 
           // Check subscription status
@@ -815,22 +1289,9 @@
           const isUnlocked = !isPremium || isUserSubscribed;
 
           const bodyHtml = isUnlocked
-            ? paragraphs.map((text) => `<p>${text}</p>`).join("")
+            ? renderPortableText(post.body)
             : (() => {
-              let count = 0;
-              const preview = [];
-              const previewLimit = 180;
-              for (const paragraph of paragraphs) {
-                const words = paragraph.split(/\s+/).filter(Boolean);
-                if (!words.length) continue;
-                const remaining = previewLimit - count;
-                if (remaining <= 0) break;
-                preview.push(words.slice(0, remaining).join(" "));
-                count += words.length;
-              }
-              const previewHtml = preview.length
-                ? preview.map((text) => `<p>${text}</p>`).join("")
-                : "<p>This premium article is available only as a preview.</p>";
+              const previewHtml = renderPortableTextPreview(post.body, 180);
               return `
                     <div class="premium-body">
                       ${previewHtml}
@@ -854,19 +1315,25 @@
               : ""
             }
             <h1>${post.title}</h1>
+            
             <div class="meta">
-              <div class="author">
+              <div class="author-meta-top">
                 <div class="author-avatar">
                   ${post.authorImage ? `<img src="${post.authorImage}" alt="${post.authorName}" />` : initials(post.authorName)}
                 </div>
-                <span class="author-name">${post.authorName || "Unknown"}</span>
+                <div class="author-details">
+                  <span class="author-name">${post.authorName || "Unknown"}</span>
+                  <span class="author-bio">${authorBioText}</span>
+                </div>
               </div>
               <div class="meta-right">
                 ${post.readingTime ? `<span class="reading-time">⏱ ${post.readingTime} min read</span>` : ""}
                 <span class="date-str">📅 ${timeAgo(post.publishedAt || post._createdAt)}</span>
               </div>
             </div>
+
             <div class="body">${bodyHtml}</div>
+            
             ${post.tags?.length
               ? `
               <div class="tags-section">
@@ -877,6 +1344,81 @@
               </div>`
               : ""
             }
+
+            <!-- Share this post -->
+            <div class="share-section">
+              <div class="share-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="share-icon">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>Share this post</span>
+              </div>
+              <div class="share-buttons">
+                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on Twitter">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on Facebook">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
+                  </svg>
+                </a>
+                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on LinkedIn">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- Solid line divider -->
+            <hr class="solid-divider" />
+
+            <!-- About the Author card -->
+            <div class="author-card-bottom">
+              <h3>About the Author</h3>
+              <div class="author-details-container">
+                <div class="author-avatar-large">
+                  ${post.authorImage ? `<img src="${post.authorImage}" alt="${post.authorName}" />` : initials(post.authorName)}
+                </div>
+                <div class="author-info">
+                  <span class="author-name">${post.authorName || "Unknown"}</span>
+                  <span class="author-bio">${authorBioText}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Read More Blogs Section -->
+            ${morePosts.length ? `
+              <div class="read-more-section">
+                <h3>Read More Blogs</h3>
+                <div class="read-more-grid">
+                  ${morePosts.map(morePost => {
+              const isMorePremium = morePost.postType === "premium" || Boolean(morePost.isPremium);
+              const isMorePrivate = Boolean(morePost.isPrivate);
+              return `
+                      <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="post.html?slug=${morePost.slug}" data-private="${isMorePrivate}">
+                        ${isMorePremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
+                        ${isMorePrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
+                        ${morePost.imageUrl ? `<img src="${morePost.imageUrl}" alt="${morePost.title}" />` : ""}
+                        <div class="card-body">
+                          <h3>${morePost.title}</h3>
+                        </div>
+                        <div class="card-footer">
+                          <span class="author-name">${morePost.authorName || "Unknown"}</span>
+                          <span class="date-str">${timeAgo(morePost.publishedAt || morePost._createdAt)}</span>
+                        </div>
+                      </a>
+                    `;
+            }).join("")}
+                </div>
+              </div>
+            ` : ""}
           `;
         })
         .catch(() => {
