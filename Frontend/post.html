@@ -28,6 +28,8 @@
       --tag-border: #ddd;
       --tag-color: #555;
       --tag-hover-bg: #f0f0f0;
+      --card-hover-border: #bbb;
+      --footer-border: #f0f0f0;
       --toggle-bg: #f0f0f0;
       --toggle-color: #333;
     }
@@ -42,6 +44,8 @@
       --tag-border: #444;
       --tag-color: #bbb;
       --tag-hover-bg: #2a2a2a;
+      --card-hover-border: #555;
+      --footer-border: #2a2a2a;
       --toggle-bg: #2a2a2a;
       --toggle-color: #e8e8e8;
     }
@@ -636,7 +640,10 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      transition:
+        border-color 0.2s,
+        transform 0.2s,
+        box-shadow 0.2s;
     }
 
     .card:hover {
@@ -678,7 +685,7 @@
 
     .card img {
       width: 100%;
-      height: 140px;
+      height: 160px;
       object-fit: cover;
       display: block;
     }
@@ -691,22 +698,98 @@
       gap: 8px;
     }
 
+    .card-cats {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .card-cat {
+      border: 1px solid var(--tag-border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.72rem;
+      color: var(--tag-color);
+      background: transparent;
+    }
+
     .card h3 {
+      margin-bottom: 0px;
       font-size: 0.95rem;
       font-weight: 600;
       line-height: 1.4;
       color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: auto;
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      font-size: 0.8rem;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--footer-border);
+    }
+
+    .author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .author-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--tag-hover-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
       color: var(--text-muted);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .author-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .author-name {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-meta .reading-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .card-meta .date-str {
+      font-size: 0.75rem;
+      color: var(--text-faint);
     }
 
     /* Portable Text Formatting Styles */
@@ -782,10 +865,29 @@
       display: block;
     }
 
+    .body-image-container {
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
     .body-image {
       max-width: 100%;
       border-radius: 8px;
-      margin: 24px 0;
+      margin: 0;
+      display: block;
+    }
+
+    .image-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-style: italic;
+      text-align: center;
+      max-width: 90%;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -1121,8 +1223,16 @@
           `;
         } else if (block._type === 'image') {
           const imageUrl = block.asset?.url;
+          const caption = block.caption;
           if (imageUrl) {
-            return `<img class="body-image" src="${imageUrl}" alt="" />`;
+            const imgHtml = `<img class="body-image" src="${imageUrl}" alt="${escapeHtml(caption || '')}" />`;
+            const captionHtml = caption ? `<div class="image-caption">${escapeHtml(caption)}</div>` : '';
+            return `
+              <div class="body-image-container">
+                ${imgHtml}
+                ${captionHtml}
+              </div>
+            `;
           }
         }
         return '';
@@ -1193,13 +1303,18 @@
           "imageUrl": mainImage.asset->url,
           "ogImageUrl": ogImage.asset->url,
           "categories": categories[]->title,
-          tags, body
+          tags, body[]{
+            ...,
+            asset->
+          }
         },
         "morePosts": *[_type == "post" && slug.current != "${slug}"] | order(_createdAt desc)[0...3]{
-          title, publishedAt, _createdAt, readingTime, postType, isPremium, isPrivate,
+          title, publishedAt, _createdAt, readingTime, postType, isPremium, isPrivate, excerpt, body,
           "imageUrl": mainImage.asset->url,
           "slug": slug.current,
-          "authorName": author->name
+          "authorName": author->name,
+          "authorImage": author->image.asset->url,
+          "categories": categories[]->title
         }
       }`);
 
@@ -1407,11 +1522,27 @@
                         ${isMorePrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                         ${morePost.imageUrl ? `<img src="${morePost.imageUrl}" alt="${morePost.title}" />` : ""}
                         <div class="card-body">
+                          ${morePost.categories?.length
+                  ? `
+                            <div class="card-cats">
+                              ${morePost.categories.map((cat) => `<span class="card-cat">${cat}</span>`).join("")}
+                            </div>`
+                  : ""
+                }
                           <h3>${morePost.title}</h3>
-                        </div>
-                        <div class="card-footer">
-                          <span class="author-name">${morePost.authorName || "Unknown"}</span>
-                          <span class="date-str">${timeAgo(morePost.publishedAt || morePost._createdAt)}</span>
+                          <p>${morePost.excerpt || morePost.body?.[0]?.children?.[0]?.text || ""}</p>
+                          <div class="card-footer">
+                            <div class="author">
+                              <div class="author-avatar">
+                                ${morePost.authorImage ? `<img src="${morePost.authorImage}" alt="${morePost.authorName}" />` : initials(morePost.authorName)}
+                              </div>
+                              <span class="author-name">${morePost.authorName || "Unknown"}</span>
+                            </div>
+                            <div class="card-meta">
+                              ${morePost.readingTime ? `<span class="reading-time">⏱ ${morePost.readingTime} min</span>` : ""}
+                              <span class="date-str">📅 ${timeAgo(morePost.publishedAt || morePost._createdAt)}</span>
+                            </div>
+                          </div>
                         </div>
                       </a>
                     `;
