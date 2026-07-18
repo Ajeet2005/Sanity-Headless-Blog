@@ -1371,7 +1371,7 @@
             .setAttribute("content", post.excerpt || "");
           document
             .querySelector('meta[property="og:image"]')
-            .setAttribute("content", post.ogImageUrl || "");
+            .setAttribute("content", post.ogImageUrl || post.imageUrl || "");
           document
             .querySelector('meta[property="og:url"]')
             .setAttribute("content", window.location.href);

@@ -19,6 +19,66 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Intercept crawler requests for post.html to dynamically inject meta tags
+app.get('/post.html', async (req, res) => {
+  const { slug } = req.query;
+  const filePath = path.join(__dirname, '../Frontend/post.html');
+
+  if (!slug) {
+    return res.sendFile(filePath);
+  }
+
+  try {
+    const PROJECT_ID = "xsd8o1za";
+    const DATASET = "production";
+    const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
+      title,
+      excerpt,
+      "imageUrl": mainImage.asset->url,
+      "ogImageUrl": ogImage.asset->url
+    }`);
+    const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
+
+    const sanityRes = await fetch(sanityUrl);
+    const sanityData = await sanityRes.json();
+    const post = sanityData.result;
+
+    if (!post) {
+      return res.sendFile(filePath);
+    }
+
+    // Read the static post.html template
+    const fs = require('fs').promises;
+    let html = await fs.readFile(filePath, 'utf8');
+
+    const imageUrl = post.ogImageUrl || post.imageUrl || '';
+    const title = post.title || 'Blog Post';
+    const description = post.excerpt || 'Read the full post on our blog.';
+
+    // Dynamically replace empty meta tags in post.html
+    html = html
+      .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/, `<meta property="og:title" content="${escapeHtml(title)}" />`)
+      .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/, `<meta property="og:description" content="${escapeHtml(description)}" />`)
+      .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/, `<meta property="og:image" content="${escapeHtml(imageUrl)}" />`)
+      .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${escapeHtml(req.protocol + '://' + req.get('host') + req.originalUrl)}" />`);
+
+    return res.send(html);
+  } catch (error) {
+    console.error('Error serving dynamic meta tags for post:', error);
+    return res.sendFile(filePath);
+  }
+});
+
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../Frontend')));
 
