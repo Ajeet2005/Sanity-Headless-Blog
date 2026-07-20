@@ -62,6 +62,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 20px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -71,7 +72,8 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      flex-wrap: wrap;
+      flex: 1;
+      min-width: 0;
     }
 
     .brand-block {
@@ -170,10 +172,83 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
+      flex-shrink: 0;
     }
 
     .theme-toggle:hover {
       border-color: var(--card-hover-border);
+    }
+
+    /* --- Search bar --- */
+    .search-wrap {
+      flex: 1;
+      max-width: 650px;
+      min-width: 200px;
+      margin-left: 28px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--text-faint);
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--text-muted);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+    }
+
+    [data-theme="dark"] .search-wrap input:focus {
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-faint);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 50%;
+      display: none;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+
+    .search-clear:hover {
+      color: var(--text);
+      background: var(--tag-hover-bg);
+    }
+
+    .search-clear.visible {
+      display: block;
     }
 
     .layout {
@@ -332,7 +407,32 @@
       }
     }
 
+    @media (max-width: 1100px) {
+      header {
+        flex-wrap: wrap;
+        padding: 14px 20px;
+        gap: 12px;
+      }
+
+      .search-wrap {
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
+
+      .header-left {
+        flex-wrap: wrap;
+      }
+    }
+
     @media (max-width: 640px) {
+      header {
+        padding: 12px 14px;
+      }
+
+      .header-left {
+        flex-wrap: wrap;
+      }
+
       .grid {
         grid-template-columns: 1fr;
       }
@@ -581,7 +681,19 @@
           <a class="nav-link" href="index.html">Blog</a>
           <a class="nav-link active" href="journal.html">Journal</a>
         </nav>
+        <div class="search-wrap" role="search">
+        <span class="search-icon">🔍</span>
+        <input
+          id="search-input"
+          type="search"
+          placeholder="Search journal posts by title, category, or tag…"
+          autocomplete="off"
+          aria-label="Search journal posts"
+        />
+        <button class="search-clear" id="search-clear" aria-label="Clear search">✕</button>
+        </div>
       </div>
+
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
         🌙 Dark
       </button>
@@ -892,6 +1004,8 @@
         .join("");
     }
 
+    let searchQuery = "";
+
     function filterPosts() {
       let filtered = allPosts;
       if (activeCategory)
@@ -900,6 +1014,23 @@
         );
       if (activeTag)
         filtered = filtered.filter((p) => p.tags?.includes(activeTag));
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        filtered = filtered.filter((p) => {
+          const title = (p.title || "").toLowerCase();
+          const excerpt = (p.excerpt || "").toLowerCase();
+          const bodyText = (p.body?.[0]?.children?.[0]?.text || "").toLowerCase();
+          const tags = (p.tags || []).join(" ").toLowerCase();
+          const cats = (p.categories || []).join(" ").toLowerCase();
+          return (
+            title.includes(q) ||
+            excerpt.includes(q) ||
+            bodyText.includes(q) ||
+            tags.includes(q) ||
+            cats.includes(q)
+          );
+        });
+      }
       renderPosts(filtered);
     }
 
@@ -962,6 +1093,36 @@
         event.stopPropagation();
         window.pendingAuthUrl = card.getAttribute("href");
         window.showAuthModal();
+      }
+    });
+
+    /* --- Search bar functionality --- */
+    const searchInput = document.getElementById("search-input");
+    const searchClear = document.getElementById("search-clear");
+
+    function handleSearch() {
+      searchQuery = searchInput.value;
+      searchClear.classList.toggle("visible", searchQuery.length > 0);
+      filterPosts();
+    }
+
+    searchInput.addEventListener("input", handleSearch);
+    searchClear.addEventListener("click", () => {
+      searchInput.value = "";
+      searchQuery = "";
+      searchClear.classList.remove("visible");
+      filterPosts();
+      searchInput.focus();
+    });
+
+    /* Handle Escape to clear */
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        searchInput.value = "";
+        searchQuery = "";
+        searchClear.classList.remove("visible");
+        filterPosts();
+        searchInput.blur();
       }
     });
 
