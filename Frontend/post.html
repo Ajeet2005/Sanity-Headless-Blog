@@ -379,8 +379,9 @@
       justify-content: center;
       padding: 20px;
       background: rgba(9, 14, 24, 0.68);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(1px);
       z-index: 1000;
+      overflow-y: auto;
     }
 
     .auth-modal.hidden {
@@ -476,6 +477,151 @@
       margin-top: 10px;
       color: #dc2626;
       font-size: 0.9rem;
+    }
+
+    /* --- Subscribe Modal Inner Wrapper & Callout Card --- */
+    .subscribe-inner {
+      position: relative;
+      display: inline-flex;
+      flex-direction: row;
+      align-items: flex-start;
+    }
+
+    .subscribe-inner .auth-card {
+      margin-left: 28%;
+      width: 420px;
+      flex-shrink: 0;
+    }
+
+    .callout-card {
+      width: 540px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border: 1px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      z-index: 10;
+      text-align: left;
+      color: #1a1a1a;
+      align-self: flex-start;
+    }
+
+    [data-theme="dark"] .callout-card {
+      background: #1a1a1a;
+      border-color: #333;
+      color: #e8e8e8;
+    }
+
+    .callout-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .callout-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .callout-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: inherit;
+    }
+
+    .callout-text {
+      font-style: italic;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      margin-bottom: 4px;
+      color: #6B7280;
+    }
+
+    [data-theme="dark"] .callout-text {
+      color: #9CA3AF;
+    }
+
+    .callout-text:last-of-type {
+      margin-bottom: 8px;
+    }
+
+    .callout-credentials {
+      margin-top: 4px;
+      padding: 10px 14px;
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 10px 24px;
+    }
+
+    [data-theme="dark"] .callout-credentials {
+      background: #111;
+      border-color: #2a2a2a;
+    }
+
+    .cred-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+    }
+
+    .cred-label {
+      color: #6B7280;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    [data-theme="dark"] .cred-label {
+      color: #9CA3AF;
+    }
+
+    .cred-value {
+      color: #111827;
+      font-weight: 600;
+      font-family: "SF Mono", "Consolas", "Monaco", monospace;
+      letter-spacing: 0.03em;
+      background: #ffffff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #E5E7EB;
+      white-space: nowrap;
+    }
+
+    [data-theme="dark"] .cred-value {
+      color: #e8e8e8;
+      background: #1a1a1a;
+      border-color: #333;
+    }
+
+    /* Connector arrow: 4cm from Card 1 top-right → Card 2 top-left */
+    .connector-arrow {
+      width: 150px;
+      height: 50px;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: 24px;
+      pointer-events: none;
+      opacity: 1;
+      margin-left: -4px;
+      margin-right: -4px;
+    }
+
+    [data-theme="dark"] .connector-arrow {
+      opacity: 0.55;
+    }
+
+    /* On smaller screens, hide the callout card & arrow */
+    @media (max-width: 1060px) {
+      .callout-card,
+      .connector-arrow {
+        display: none;
+      }
     }
 
     /* Author Top Details Styles */
@@ -957,17 +1103,52 @@
 
   <!-- Khalti Premium Blog Subscription Modals -->
   <div id="subscribe-modal" class="auth-modal hidden">
-    <div class="auth-card">
-      <h3 style="display: flex; align-items: center; gap: 8px;">
-        <span style="color: #facc15;">★</span> Subscribe to Premium
-      </h3>
-      <p>Unlock this and all other premium articles on the blog.</p>
-      <div style="margin: 14px 0; font-weight: 600; color: var(--text);">Price: 10 NPR (Test payment)</div>
-      <input id="sub-email" placeholder="Enter your email address" type="email" required />
-      <button id="sub-submit">Pay with Khalti</button>
-      <div class="secondary" id="sub-verify-trigger">Already subscribed? Verify Email</div>
-      <button class="btn-cancel" id="sub-cancel">Cancel</button>
-      <div class="auth-status" id="sub-status"></div>
+    <div class="subscribe-inner">
+      <!-- Card 1: Existing Subscribe to Premium card (unchanged) -->
+      <div class="auth-card">
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #facc15;">★</span> Subscribe to Premium
+        </h3>
+        <p>Unlock this and all other premium articles on the blog.</p>
+        <div style="margin: 14px 0; font-weight: 600; color: var(--text);">Price: 10 NPR (Test payment)</div>
+        <input id="sub-email" placeholder="Enter your email address" type="email" required />
+        <button id="sub-submit">Pay with Khalti</button>
+        <div class="secondary" id="sub-verify-trigger">Already subscribed? Verify Email</div>
+        <button class="btn-cancel" id="sub-cancel">Cancel</button>
+        <div class="auth-status" id="sub-status"></div>
+      </div>
+
+      <!-- 4cm arrow: Card 1 top-right → Card 2 top-left -->
+      <svg class="connector-arrow" viewBox="0 0 150 50" fill="none">
+        <path d="M 18 14 Q 75 5, 132 14" stroke="#9CA3AF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="4 3"/>
+        <polygon points="132,8 143,14 132,20" fill="#9CA3AF" />
+      </svg>
+
+      <!-- Card 2: Callout for test credentials (right side) -->
+      <div class="callout-card">
+        <div class="callout-header">
+          <span class="callout-icon">⚠️</span>
+          <span class="callout-title">Test Merchant Credentials</span>
+        </div>
+        <p class="callout-text">
+          This checkout uses a Khalti Test Merchant account. You may use your own email
+          address. After redirect to Khalti, enter these test credentials:
+        </p>
+        <div class="callout-credentials">
+          <div class="cred-row">
+            <span class="cred-label">📱 Mobile:</span>
+            <span class="cred-value">9800000005</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">🔑 MPIN:</span>
+            <span class="cred-value">1111</span>
+          </div>
+          <div class="cred-row">
+            <span class="cred-label">〰️ OTP:</span>
+            <span class="cred-value">987654</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
