@@ -419,14 +419,48 @@
 
     .auth-card button {
       width: 100%;
-      border: none;
+      border: 1px solid #111;
       border-radius: 10px;
-      background: #2563eb;
-      color: white;
+      background: #111;
+      color: #fff;
       padding: 10px 12px;
       font-weight: 600;
       cursor: pointer;
       margin-top: 4px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .auth-card button:hover {
+      background: #262626;
+      border-color: #262626;
+    }
+
+    [data-theme="dark"] .auth-card button {
+      background: #fff;
+      color: #111;
+      border-color: #fff;
+    }
+
+    [data-theme="dark"] .auth-card button:hover {
+      background: #e8e8e8;
+      border-color: #e8e8e8;
+    }
+
+    .auth-card button.btn-cancel {
+      margin-left: 36%;
+      display: inline-block;
+      width: auto;
+      background: transparent;
+      color: black;
+      border: 1px solid var(#0f0f0f);
+      padding: 8px 18px;
+      margin-top: 8px;
+    }
+
+    .auth-card button.btn-cancel:hover {
+      background: var(--tag-hover-bg);
+      color: var(--text);
+      border-color: var(--text);
     }
 
     .auth-card .secondary {
@@ -930,9 +964,9 @@
       <p>Unlock this and all other premium articles on the blog.</p>
       <div style="margin: 14px 0; font-weight: 600; color: var(--text);">Price: 10 NPR (Test payment)</div>
       <input id="sub-email" placeholder="Enter your email address" type="email" required />
-      <button id="sub-submit" style="background: #10b981;">Pay with Khalti</button>
+      <button id="sub-submit">Pay with Khalti</button>
       <div class="secondary" id="sub-verify-trigger">Already subscribed? Verify Email</div>
-      <div class="secondary" id="sub-cancel">Cancel</div>
+      <button class="btn-cancel" id="sub-cancel">Cancel</button>
       <div class="auth-status" id="sub-status"></div>
     </div>
   </div>
@@ -942,8 +976,8 @@
       <h3>Verify Subscription</h3>
       <p>Enter the email address you used to subscribe to verify your access.</p>
       <input id="verify-email" placeholder="Enter your email address" type="email" required />
-      <button id="verify-submit" style="background: #2563eb;">Verify & Unlock</button>
-      <div class="secondary" id="verify-cancel">Back to Subscribe</div>
+      <button id="verify-submit">Verify & Unlock</button>
+      <button class="btn-cancel" id="verify-cancel">Back to Subscribe</button>
       <div class="auth-status" id="verify-status"></div>
     </div>
   </div>

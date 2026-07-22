@@ -184,7 +184,7 @@
       flex: 1;
       max-width: 650px;
       min-width: 200px;
-      margin-left: 28px;
+      margin-left: 40px;
       display: flex;
       align-items: center;
       position: relative;
@@ -316,7 +316,7 @@
     .sidebar-body {
       display: none;
       padding: 4px 12px 12px;
-      flex-direction: column;
+      flex-wrap: wrap;
       gap: 6px;
     }
 
@@ -417,6 +417,7 @@
       .search-wrap {
         max-width: 100%;
         flex: 1 1 100%;
+        margin-left: 0;
       }
 
       .header-left {
@@ -427,6 +428,10 @@
     @media (max-width: 640px) {
       header {
         padding: 12px 14px;
+      }
+
+      .search-wrap {
+        margin-left: 0;
       }
 
       .header-left {
@@ -642,14 +647,31 @@
 
     .auth-card button {
       width: 100%;
-      border: none;
+      border: 1px solid #111;
       border-radius: 10px;
-      background: #2563eb;
-      color: white;
+      background: #111;
+      color: #fff;
       padding: 10px 12px;
       font-weight: 600;
       cursor: pointer;
       margin-top: 4px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .auth-card button:hover {
+      background: #262626;
+      border-color: #262626;
+    }
+
+    [data-theme="dark"] .auth-card button {
+      background: #fff;
+      color: #111;
+      border-color: #fff;
+    }
+
+    [data-theme="dark"] .auth-card button:hover {
+      background: #e8e8e8;
+      border-color: #e8e8e8;
     }
 
     .auth-card .secondary {
