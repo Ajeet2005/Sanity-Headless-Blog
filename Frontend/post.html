@@ -10,6 +10,8 @@
   <meta property="og:image" content="" />
   <meta property="og:url" content="" />
   <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Anubhav" />
+  <meta name="twitter:card" content="summary_large_image" />
   <title>Blog Post</title>
   <style>
     * {
@@ -67,7 +69,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: relative;
+      gap: 20px;
+      position: sticky;
+      top: 0;
       z-index: 100;
     }
 
@@ -75,45 +79,60 @@
       display: flex;
       align-items: center;
       gap: 16px;
-      flex-wrap: wrap;
+      flex: 1;
+      min-width: 0;
     }
 
-    .back-link,
-    .nav-link {
-      text-decoration: none;
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      padding-left: 37px;
+      font-weight: 800;
       color: var(--text);
-      font-size: 0.95rem;
-      font-weight: 600;
+      font-family: "Poppins", "Segoe UI", sans-serif;
+      letter-spacing: -0.04em;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .brand-tagline {
       display: flex;
       align-items: center;
-      gap: 6px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 4px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .nav-link {
+      gap: 10px;
       color: var(--text-muted);
-      font-weight: 500;
-      padding: 10px 18px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
+      font-size: 0.8rem;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      letter-spacing: 0.01em;
     }
 
-    .back-link:hover,
-    .nav-link:hover {
-      color: var(--text);
-      background: var(--tag-hover-bg);
+    .brand-tagline::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #22c55e;
+      display: inline-block;
+      animation: blink 1.2s infinite ease-in-out;
     }
+
+    @keyframes blink {
+      0%, 45%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50%, 95% {
+        opacity: 0.2;
+        transform: scale(0.85);
+      }
+    }
+
+    
 
     .theme-toggle {
       background: var(--toggle-bg);
@@ -127,6 +146,11 @@
       align-items: center;
       gap: 6px;
       transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--card-hover-border);
     }
 
     main {
@@ -192,19 +216,22 @@
     .premium-body {
       position: relative;
       overflow: hidden;
-      max-height: 380px;
+      max-height: 560px;
       padding-bottom: 20px;
-    }
-
-    .premium-body::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 140px;
-      background: linear-gradient(transparent, var(--surface));
-      pointer-events: none;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        black calc(100% - 220px),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        black calc(100% - 220px),
+        transparent 100%
+      );
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
     }
 
     .cover {
@@ -614,6 +641,27 @@
 
     [data-theme="dark"] .connector-arrow {
       opacity: 0.55;
+    }
+
+    /* ── RESPONSIVE HEADER ── */
+    @media (max-width: 1100px) {
+      header {
+        flex-wrap: wrap;
+        padding: 14px 20px;
+        gap: 12px;
+      }
+      .header-left {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 12px 14px;
+      }
+      .header-left {
+        flex-wrap: wrap;
+      }
     }
 
     /* On smaller screens, hide the callout card & arrow */
@@ -1069,6 +1117,353 @@
       max-width: 90%;
       line-height: 1.4;
     }
+    /* ── Feedback / Review Section ── */
+    .review-section {
+      margin-top: 48px;
+      padding-top: 0;
+    }
+
+    .review-section h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    /* Review Form */
+    .review-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .review-form .form-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .review-form .form-row {
+      margin-bottom: 14px;
+    }
+
+    .review-form label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .review-form input,
+    .review-form textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+
+    .review-form input:focus,
+    .review-form textarea:focus {
+      outline: none;
+      border-color: var(--text-muted);
+    }
+
+    .review-form textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .review-form .star-rating {
+      display: flex;
+      gap: 4px;
+      padding: 4px 0;
+    }
+
+    .review-form .star-rating .star {
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: var(--border);
+      transition: color 0.15s, transform 0.15s;
+      user-select: none;
+    }
+
+    .review-form .star-rating .star.active {
+      color: #facc15;
+    }
+
+    .review-form .rating-label {
+      font-size: 0.82rem;
+      color: var(--text-faint);
+      margin-left: 8px;
+      align-self: center;
+    }
+
+    .review-form .submit-btn {
+      border: none;
+      background: #111;
+      color: #fff;
+      border-radius: 999px;
+      padding: 10px 24px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.18s ease, transform 0.15s;
+      margin-top: 4px;
+    }
+
+    .review-form .submit-btn:hover {
+      background: #262626;
+      transform: translateY(-1px);
+    }
+
+    .review-form .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    [data-theme="dark"] .review-form .submit-btn {
+      background: #fff;
+      color: #111;
+    }
+
+    [data-theme="dark"] .review-form .submit-btn:hover {
+      background: #e8e8e8;
+    }
+
+    .review-form .form-status {
+      min-height: 20px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+    }
+
+    .review-form .form-status.success {
+      color: #22c55e;
+    }
+
+    .review-form .form-status.error {
+      color: #dc2626;
+    }
+
+    /* Review Cards */
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .review-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+
+    .review-card:hover {
+      border-color: var(--card-hover-border);
+    }
+
+    .review-card .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .review-card .reviewer-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .review-card .reviewer-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--tag-hover-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .review-card .reviewer-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .review-card .review-date {
+      font-size: 0.75rem;
+      color: var(--text-faint);
+    }
+
+    .review-card .review-stars {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .review-card .review-stars .star {
+      font-size: 1rem;
+      color: #facc15;
+    }
+
+    .review-card .review-stars .star.empty {
+      color: var(--border);
+    }
+
+    .review-card .review-feedback {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    .reviews-empty {
+      text-align: center;
+      color: var(--text-faint);
+      padding: 32px 0;
+      font-size: 0.95rem;
+    }
+
+    .reviews-loading {
+      text-align: center;
+      color: var(--text-faint);
+      padding: 16px 0;
+      font-size: 0.9rem;
+    }
+
+    /* Review Thanks State */
+    .review-thanks {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 24px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .review-thanks .thanks-icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+    }
+
+    .review-thanks .thanks-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .review-thanks .thanks-title .name-stroke {
+      position: relative;
+      display: inline-block;
+      line-height: 1.4;
+    }
+
+    .review-thanks .thanks-title .name-stroke::after {
+      content: '';
+      position: absolute;
+      left: -2px;
+      right: -2px;
+      bottom: -4px;
+      height: 5px;
+      background: var(--text);
+      border-radius: 6px 2px 6px 2px;
+      transform: skewX(-7deg) scaleY(0.55);
+      opacity: 0.85;
+    }
+
+    .review-thanks .thanks-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .review-thanks .thanks-review-display {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 18px;
+      text-align: left;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .review-thanks .thanks-review-display .tr-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .review-thanks .thanks-review-display .tr-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .review-thanks .thanks-review-display .tr-stars {
+      display: flex;
+      gap: 2px;
+    }
+
+    .review-thanks .thanks-review-display .tr-stars .star {
+      font-size: 1rem;
+      color: #facc15;
+    }
+
+    .review-thanks .thanks-review-display .tr-stars .star.empty {
+      color: var(--border);
+    }
+
+    .review-thanks .thanks-review-display .tr-feedback {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .update-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: all 0.18s ease;
+    }
+
+    .update-btn:hover {
+      border-color: var(--text);
+      background: var(--tag-hover-bg);
+    }
+
+    .review-form.hidden,
+    .review-thanks.hidden {
+      display: none;
+    }
   </style>
 </head>
 
@@ -1076,8 +1471,10 @@
   <div class="app-shell" id="app-shell">
     <header>
       <div class="header-left">
-        <a class="back-link" href="index.html">← Back to Blog</a>
-        <nav class="nav-links"></nav>
+        <div class="brand-block">
+          <h1><a href="index.html" style="color: inherit; text-decoration: none;">Anubhav</a></h1>
+          <p class="brand-tagline"><i>Lived, Learned, Documented</i></p>
+        </div>
       </div>
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
         🌙 Dark
@@ -1586,7 +1983,7 @@
             .setAttribute("content", post.excerpt || "");
           document
             .querySelector('meta[property="og:image"]')
-            .setAttribute("content", post.ogImageUrl || post.imageUrl || "");
+            .setAttribute("content", post.ogImageUrl || post.imageUrl || window.location.origin + "/favicon.png");
           document
             .querySelector('meta[property="og:url"]')
             .setAttribute("content", window.location.href);
@@ -1688,17 +2085,17 @@
                 <span>Share this post</span>
               </div>
               <div class="share-buttons">
-                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on Twitter">
+                <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}" target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on Twitter">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
                 </a>
-                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on Facebook">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}" target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on Facebook">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
                   </svg>
                 </a>
-                <a href="#" class="share-btn" onclick="event.preventDefault();" aria-label="Share on LinkedIn">
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}" target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on LinkedIn">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                   </svg>
@@ -1720,6 +2117,50 @@
                   <span class="author-name">${post.authorName || "Unknown"}</span>
                   <span class="author-bio">${authorBioText}</span>
                 </div>
+              </div>
+            </div>
+
+            <!-- Feedback / Review Section -->
+            <div class="review-section" id="review-section">
+              <h3>Leave a Review</h3>
+              
+              <!-- Submit / Edit Form -->
+              <div class="review-form" id="review-form">
+                <div class="form-title" id="form-title">Share your thoughts about this post</div>
+                <div class="form-row">
+                  <label for="review-name">Name *</label>
+                  <input type="text" id="review-name" placeholder="You can stay anonymous (or enter your name)" maxlength="60" />
+                </div>
+                <div class="form-row">
+                  <label>Rating *</label>
+                  <div class="star-rating" id="star-rating">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                    <span class="rating-label" id="rating-label">Select rating</span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label for="review-feedback">Feedback</label>
+                  <textarea id="review-feedback" placeholder="What did you think of this post?" maxlength="500"></textarea>
+                </div>
+                <button class="submit-btn" id="review-submit">Submit Review</button>
+                <div class="form-status" id="review-status"></div>
+              </div>
+
+              <!-- Thanks Card (shown after submission) -->
+              <div class="review-thanks hidden" id="review-thanks">
+                <div class="thanks-icon">🎉</div>
+                <div class="thanks-title" id="thanks-title">Thanks for your feedback!</div>
+                
+                <div class="thanks-review-display" id="thanks-review-display"></div>
+                <button class="update-btn" id="update-review-btn">✏️ Update Feedback</button>
+              </div>
+
+              <div id="reviews-container">
+                <div class="reviews-loading">Loading reviews...</div>
               </div>
             </div>
 
@@ -1766,6 +2207,10 @@
               </div>
             ` : ""}
           `;
+
+          // Initialize review section after content is rendered
+          initReviewForm();
+          loadReviews(slug);
         })
         .catch(() => {
           document.getElementById("status").textContent =
@@ -1893,7 +2338,315 @@
         submitBtn.disabled = false;
         submitBtn.textContent = "Verify & Unlock";
       }
-    });
+    });    // ── Review / Feedback Functionality ──
+
+    let selectedRating = 0;
+    let isUpdating = false;
+
+    function renderStars(rating) {
+      let html = "";
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          html += '<span class="star">★</span>';
+        } else {
+          html += '<span class="star empty">★</span>';
+        }
+      }
+      return html;
+    }
+
+    function renderReviewCard(review) {
+      const initials = review.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
+
+      return `
+        <div class="review-card">
+          <div class="review-header">
+            <div class="reviewer-info">
+              <div class="reviewer-avatar">${initials}</div>
+              <div>
+                <div class="reviewer-name">${escapeHtml(review.name)}</div>
+                <div class="review-date">${timeAgo(review.createdAt)}</div>
+              </div>
+            </div>
+            <div class="review-stars">${renderStars(review.rating)}</div>
+          </div>
+          ${review.feedback ? `<div class="review-feedback">${escapeHtml(review.feedback)}</div>` : ""}
+        </div>
+      `;
+    }
+
+    async function loadReviews(slug) {
+      const container = document.getElementById("reviews-container");
+      if (!container) return;
+
+      container.innerHTML = '<div class="reviews-loading">Loading reviews...</div>';
+
+      try {
+        const res = await fetch(`/api/reviews?slug=${encodeURIComponent(slug)}`);
+        const data = await res.json();
+
+        if (res.ok && data.reviews) {
+          if (data.reviews.length === 0) {
+            container.innerHTML = '<div class="reviews-empty">No reviews yet. Be the first to share your thoughts!</div>';
+          } else {
+            container.innerHTML = `<div class="reviews-list">${data.reviews.map(renderReviewCard).join("")}</div>`;
+          }
+        } else {
+          container.innerHTML = '<div class="reviews-empty">Unable to load reviews.</div>';
+        }
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+        container.innerHTML = '<div class="reviews-empty">Unable to load reviews.</div>';
+      }
+    }
+
+    function getStorageKey() {
+      return `lastReview_${slug}`;
+    }
+
+    /* ── Shared helpers ── */
+    let _currentReviewData = null; // in-memory copy of user's last review
+
+    function setStarsActive(rating) {
+      const stars = document.querySelectorAll("#star-rating .star");
+      stars.forEach((s) => {
+        s.classList.toggle("active", parseInt(s.dataset.value, 10) <= rating);
+      });
+      const labels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"];
+      const label = document.getElementById("rating-label");
+      label.textContent = labels[rating] || "Select rating";
+    }
+
+    function resetFormToFresh() {
+      const nameInput = document.getElementById("review-name");
+      const feedbackInput = document.getElementById("review-feedback");
+      const formTitle = document.getElementById("form-title");
+      const submitBtn = document.getElementById("review-submit");
+
+      isUpdating = false;
+      selectedRating = 0;
+      nameInput.value = "";
+      feedbackInput.value = "";
+      formTitle.textContent = "Share your thoughts about this post";
+      submitBtn.textContent = "Submit Review";
+      submitBtn.disabled = false;
+      setStarsActive(0);
+    }
+
+    function showThanksState(data) {
+      const form = document.getElementById("review-form");
+      const thanks = document.getElementById("review-thanks");
+      const display = document.getElementById("thanks-review-display");
+
+      // Build stars HTML
+      let starsHtml = "";
+      for (let i = 1; i <= 5; i++) {
+        starsHtml += i <= data.rating
+          ? '<span class="star">★</span>'
+          : '<span class="star empty">★</span>';
+      }
+
+      display.innerHTML = `
+        <div class="tr-header">
+          <span class="tr-name">${escapeHtml(data.name)}</span>
+          <span class="tr-stars">${starsHtml}</span>
+        </div>
+        ${data.feedback ? `<div class="tr-feedback" style="font-style:italic">${escapeHtml(data.feedback)}</div>` : ""}
+      `;
+
+      // Set the thanks title with user's name (name gets a stroke underline)
+      const thanksTitle = document.getElementById("thanks-title");
+      if (thanksTitle) {
+        const displayName = data.name && data.name !== "Anonymous" ? data.name : "";
+        if (displayName) {
+          thanksTitle.innerHTML = `Thanks <span class="name-stroke">${escapeHtml(displayName)}</span> for your feedback!`;
+        } else {
+          thanksTitle.textContent = "Thanks for your feedback!";
+        }
+      }
+
+      form.classList.add("hidden");
+      thanks.classList.remove("hidden");
+    }
+
+    function showEditForm(data) {
+      const form = document.getElementById("review-form");
+      const thanks = document.getElementById("review-thanks");
+      const nameInput = document.getElementById("review-name");
+      const feedbackInput = document.getElementById("review-feedback");
+      const submitBtn = document.getElementById("review-submit");
+      const formTitle = document.getElementById("form-title");
+
+      // Pre-fill form
+      nameInput.value = data.name;
+      feedbackInput.value = data.feedback || "";
+      selectedRating = data.rating;
+
+      // Set stars using shared helper
+      setStarsActive(selectedRating);
+
+      // Set to update mode
+      isUpdating = true;
+      formTitle.textContent = "Update your review";
+      submitBtn.textContent = "Update Review";
+      submitBtn.disabled = false;
+
+      // Show form, hide thanks
+      thanks.classList.add("hidden");
+      form.classList.remove("hidden");
+    }
+
+    function checkExistingReview() {
+      // First check in-memory (most reliable)
+      if (_currentReviewData) {
+        showThanksState(_currentReviewData);
+        return;
+      }
+      // Then check localStorage
+      const stored = localStorage.getItem(getStorageKey());
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          _currentReviewData = data;
+          showThanksState(data);
+        } catch (e) {
+          localStorage.removeItem(getStorageKey());
+        }
+      }
+    }
+
+    function initReviewForm() {
+      const stars = document.querySelectorAll("#star-rating .star");
+
+      stars.forEach((star) => {
+        star.addEventListener("click", function () {
+          selectedRating = parseInt(this.dataset.value, 10);
+          setStarsActive(selectedRating);
+        });
+
+        star.addEventListener("mouseenter", function () {
+          const val = parseInt(this.dataset.value, 10);
+          setStarsActive(val);
+        });
+
+        star.addEventListener("mouseleave", function () {
+          setStarsActive(selectedRating);
+        });
+      });
+
+      // Handle form submission (create or update)
+      document.getElementById("review-submit").addEventListener("click", async function () {
+        const nameInput = document.getElementById("review-name");
+        const feedbackInput = document.getElementById("review-feedback");
+        const statusEl = document.getElementById("review-status");
+        const submitBtn = this;
+
+        const name = nameInput.value.trim();
+        const feedback = feedbackInput.value.trim();
+
+        statusEl.className = "form-status";
+        statusEl.textContent = "";
+
+        // Name is optional — defaults to "Anonymous" on the server
+        const displayName = name || "Anonymous";
+
+        if (selectedRating < 1) {
+          statusEl.className = "form-status error";
+          statusEl.textContent = "Please select a rating.";
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = isUpdating ? "Updating..." : "Submitting...";
+
+        try {
+          const method = isUpdating ? "PUT" : "POST";
+          const res = await fetch("/api/reviews", {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: displayName,
+              rating: selectedRating,
+              feedback,
+              slug: slug,
+            }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            // Save to in-memory AND localStorage
+            _currentReviewData = {
+              name: displayName,
+              rating: selectedRating,
+              feedback,
+            };
+            localStorage.setItem(getStorageKey(), JSON.stringify(_currentReviewData));
+
+            // Reset form to fresh state
+            resetFormToFresh();
+
+            statusEl.textContent = "";
+
+            // Show thanks card with the submitted review
+            showThanksState(_currentReviewData);
+
+            // Reload all reviews
+            loadReviews(slug);
+          } else {
+            statusEl.className = "form-status error";
+            statusEl.textContent = data.error || "Failed to submit review.";
+            submitBtn.disabled = false;
+            submitBtn.textContent = isUpdating ? "Update Review" : "Submit Review";
+            isUpdating = false;
+          }
+        } catch (err) {
+          statusEl.className = "form-status error";
+          statusEl.textContent = "Network error. Please try again.";
+          console.error("Review submit error:", err);
+          submitBtn.disabled = false;
+          submitBtn.textContent = isUpdating ? "Update Review" : "Submit Review";
+        }
+      });
+
+      // Handle "Update Feedback" button
+      document.getElementById("update-review-btn").addEventListener("click", function () {
+        // Prefer in-memory data (never stale, no JSON parse issues)
+        if (_currentReviewData) {
+          showEditForm(_currentReviewData);
+          return;
+        }
+        // Fall back to localStorage
+        const stored = localStorage.getItem(getStorageKey());
+        if (stored) {
+          try {
+            const data = JSON.parse(stored);
+            _currentReviewData = data;
+            showEditForm(data);
+          } catch (e) {
+            localStorage.removeItem(getStorageKey());
+            // Show empty form
+            document.getElementById("review-form").classList.remove("hidden");
+            document.getElementById("review-thanks").classList.add("hidden");
+            resetFormToFresh();
+          }
+        } else {
+          // No stored data, just show empty form
+          document.getElementById("review-form").classList.remove("hidden");
+          document.getElementById("review-thanks").classList.add("hidden");
+          resetFormToFresh();
+        }
+      });
+
+      // Check if user already submitted a review
+      checkExistingReview();
+    }
+
   </script>
 </body>
 <!-- //test -->

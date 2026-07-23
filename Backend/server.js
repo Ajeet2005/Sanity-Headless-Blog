@@ -15,6 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -61,7 +62,8 @@ app.get('/post.html', async (req, res) => {
     const fs = require('fs').promises;
     let html = await fs.readFile(filePath, 'utf8');
 
-    const imageUrl = post.ogImageUrl || post.imageUrl || '';
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const imageUrl = post.ogImageUrl || post.imageUrl || `${baseUrl}/favicon.png`;
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
@@ -112,6 +114,28 @@ const PaymentSchema = new mongoose.Schema({
 
 const Subscription = mongoose.model('Subscription', SubscriptionSchema);
 const Payment = mongoose.model('Payment', PaymentSchema);
+
+// ── Review Schema & Model ──
+const ReviewSchema = new mongoose.Schema({
+  name: { type: String, default: 'Anonymous' },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  feedback: { type: String, default: '' },
+  slug: { type: String, required: true, index: true },
+  createdAt: { type: Date, default: Date.now },
+});
+
+const ReviewHistorySchema = new mongoose.Schema({
+  originalReviewId: { type: mongoose.Schema.Types.ObjectId, ref: 'Review', required: true },
+  name: { type: String, default: 'Anonymous' },
+  rating: { type: Number, required: true },
+  feedback: { type: String, default: '' },
+  slug: { type: String, required: true, index: true },
+  version: { type: Number, required: true },
+  archivedAt: { type: Date, default: Date.now },
+});
+
+const Review = mongoose.model('Review', ReviewSchema);
+const ReviewHistory = mongoose.model('ReviewHistory', ReviewHistorySchema);
 
 // API Endpoints
 
@@ -274,6 +298,122 @@ app.get('/api/payment/callback', async (req, res) => {
   } catch (error) {
     console.error('Error handling payment callback:', error);
     return res.status(500).send('Server error handling payment callback.');
+  }
+});
+
+// ── Review API Endpoints ──
+
+// POST /api/reviews — submit a review
+app.post('/api/reviews', async (req, res) => {
+  try {
+    const { name, rating, feedback, slug } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5.' });
+    }
+    if (!slug) {
+      return res.status(400).json({ error: 'Post slug is required.' });
+    }
+
+    const review = new Review({
+      name: (name || '').trim() || 'Anonymous',
+      rating: parseInt(rating, 10),
+      feedback: (feedback || '').trim(),
+      slug,
+    });
+
+    await review.save();
+    console.log(`Review saved for slug: ${slug}`);
+
+    return res.status(201).json({ success: true, review });
+  } catch (error) {
+    console.error('Error saving review:', error);
+    return res.status(500).json({ error: 'Server error saving review.' });
+  }
+});
+
+// GET /api/reviews?slug=xxx — fetch reviews for a post
+app.get('/api/reviews', async (req, res) => {
+  try {
+    const { slug } = req.query;
+    if (!slug) {
+      return res.status(400).json({ error: 'Post slug is required.' });
+    }
+
+    const reviews = await Review.find({ slug }).sort({ createdAt: -1 });
+    return res.json({ reviews });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return res.status(500).json({ error: 'Server error fetching reviews.' });
+  }
+});
+
+// PUT /api/reviews — update an existing review (identified by name + slug)
+// Preserves the old version in ReviewHistory before updating
+app.put('/api/reviews', async (req, res) => {
+  try {
+    const { name, rating, feedback, slug } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5.' });
+    }
+    if (!slug) {
+      return res.status(400).json({ error: 'Post slug is required.' });
+    }
+
+    const reviewerName = (name || '').trim() || 'Anonymous';
+
+    // Find the existing review first
+    const existingReview = await Review.findOne({ name: reviewerName, slug });
+
+    if (!existingReview) {
+      return res.status(404).json({ error: 'Review not found. Please submit a new review.' });
+    }
+
+    // Count existing history entries to determine version number
+    const historyCount = await ReviewHistory.countDocuments({ originalReviewId: existingReview._id });
+    const version = historyCount + 1;
+
+    // Archive the old version into history
+    const oldVersion = new ReviewHistory({
+      originalReviewId: existingReview._id,
+      name: existingReview.name,
+      rating: existingReview.rating,
+      feedback: existingReview.feedback,
+      slug: existingReview.slug,
+      version,
+    });
+    await oldVersion.save();
+
+    // Now update the review
+    existingReview.rating = parseInt(rating, 10);
+    existingReview.feedback = (feedback || '').trim();
+    existingReview.createdAt = new Date();
+    await existingReview.save();
+
+    console.log(`Review updated for slug: ${slug}, name: ${reviewerName} (version ${version} archived)`);
+    return res.json({ success: true, review: existingReview });
+  } catch (error) {
+    console.error('Error updating review:', error);
+    return res.status(500).json({ error: 'Server error updating review.' });
+  }
+});
+
+// GET /api/reviews/history?reviewId=xxx — fetch version history for a specific review
+app.get('/api/reviews/history', async (req, res) => {
+  try {
+    const { reviewId } = req.query;
+    if (!reviewId) {
+      return res.status(400).json({ error: 'Review ID is required.' });
+    }
+
+    const history = await ReviewHistory.find({ originalReviewId: reviewId })
+      .sort({ version: -1 });
+
+    return res.json({ history });
+  } catch (error) {
+    console.error('Error fetching review history:', error);
+    return res.status(500).json({ error: 'Server error fetching review history.' });
   }
 });
 
