@@ -37,6 +37,79 @@
     return localStorage.getItem('firebaseAuthToken') || '';
   }
 
+  /* ── device / browser support detection ── */
+
+  function isIOS() {
+    return (
+      /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      // iPadOS 13+ reports as Mac, but has touch points
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }
+
+  function isStandalonePwa() {
+    return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  }
+
+  function isInAppBrowser() {
+    const ua = navigator.userAgent;
+    return /FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|Twitter\/|MicroMessenger|WebView|wv\./i.test(ua);
+  }
+
+  function isSecure() {
+    return window.isSecureContext === true;
+  }
+
+  // Returns { supported: true } or { supported: false, title, message } with
+  // actionable guidance for the device/browser that can't do push.
+  function notificationSupport() {
+    if (isInAppBrowser()) {
+      return {
+        supported: false,
+        title: 'Open in a real browser',
+        message:
+          "You're using an in-app browser (Instagram, WhatsApp, Facebook…), which can't show push notifications. Tap ⋯ (or Share) → Open in Chrome/Safari, then try again.",
+      };
+    }
+    if (!isSecure()) {
+      return {
+        supported: false,
+        title: 'HTTPS required',
+        message:
+          'Notifications only work on a secure (https://) connection. Open the site via https or the deployed URL, then try again.',
+      };
+    }
+    // iOS: on iOS 16.4+ Safari, the Notification API exists but push only works
+    // when the site is installed as a PWA (added to Home Screen). Check this FIRST
+    // so non-installed iPhones get install instructions instead of a confusing
+    // auto-denied permission flow.
+    if (isIOS() && !isStandalonePwa()) {
+      return {
+        supported: false,
+        title: 'Add to Home Screen first',
+        message:
+          'On iPhone/iPad, notifications need iOS 16.4+ and this site added to your Home Screen: tap Share → Add to Home Screen, open the app from there, then enable notifications.',
+      };
+    }
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      if (isIOS()) {
+        return {
+          supported: false,
+          title: 'Update iOS',
+          message:
+            'Push notifications on iPhone/iPad require iOS 16.4 or later. Update iOS, then try again.',
+        };
+      }
+      return {
+        supported: false,
+        title: 'Browser not supported',
+        message:
+          'This browser does not support push notifications. Try the latest Chrome, Edge, Firefox, or Safari.',
+      };
+    }
+    return { supported: true };
+  }
+
   async function fetchConfig() {
     if (config) return config;
     try {
@@ -95,7 +168,7 @@
     bell.classList.toggle('has-notifications', Boolean(localStorage.getItem(TOKEN_STORAGE_KEY)));
   }
 
-  function renderState(state, note) {
+  function renderState(state, note, titleOverride) {
     currentState = state;
     const titleEl = document.getElementById('notif-title');
     const textEl = document.getElementById('notif-text');
@@ -135,6 +208,8 @@
       noteEl.textContent = '';
       noteEl.style.display = 'none';
     }
+
+    if (titleOverride) titleEl.textContent = titleOverride;
   }
 
   function openPopup() {
@@ -179,8 +254,9 @@
     noteEl.textContent = '';
     noteEl.style.display = 'none';
 
-    if (!('Notification' in window)) {
-      renderState('default', 'This browser does not support notifications.');
+    const support = notificationSupport();
+    if (!support.supported) {
+      renderState('default', support.message, support.title);
       return;
     }
 
