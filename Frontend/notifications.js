@@ -89,6 +89,12 @@
 
   /* ── popup rendering ── */
 
+  /* Red dot = this device has notifications enabled (token saved locally).
+     Shown in every state for users who enabled, only removed on disable. */
+  function syncBellDot() {
+    bell.classList.toggle('has-notifications', Boolean(localStorage.getItem(TOKEN_STORAGE_KEY)));
+  }
+
   function renderState(state, note) {
     currentState = state;
     const titleEl = document.getElementById('notif-title');
@@ -98,26 +104,28 @@
       titleEl.textContent = '✓ Notifications enabled';
       textEl.textContent = "We'll notify you when a new blog is published.";
       actionBtn.textContent = 'Disable Notifications';
-      bell.classList.add('has-notifications');
+      syncBellDot();
     } else if (state === 'denied') {
       titleEl.textContent = 'Notifications blocked';
       textEl.textContent =
         'You blocked notifications in your browser. Allow notifications for this site in your browser settings, then try again.';
       actionBtn.textContent = 'Enable Notifications';
-      bell.classList.remove('has-notifications');
+      syncBellDot();
     } else if (state === 'not-configured') {
       titleEl.textContent = 'Notifications';
       textEl.textContent = 'Never miss a new article. Get notified when we publish something new.';
       actionBtn.textContent = 'Enable Notifications';
       actionBtn.disabled = true;
-      bell.classList.remove('has-notifications');
+      syncBellDot();
     } else {
-      // default
+      // default — keep the red dot for anyone who has enabled notifications,
+      // even if a transient status check fails. It's only truly removed when
+      // the user disables (token cleared before renderState('default') is called).
       titleEl.textContent = 'Notifications';
       textEl.textContent = 'Never miss a new article. Get notified when we publish something new.';
       actionBtn.textContent = 'Enable Notifications';
       actionBtn.disabled = false;
-      bell.classList.remove('has-notifications');
+      syncBellDot();
     }
 
     if (note) {
@@ -300,7 +308,7 @@
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #22c55e;
+        background: #ef4444; /* red dot — active while notifications are enabled */
         border: 2px solid var(--surface);
       }
       .notif-popup {
