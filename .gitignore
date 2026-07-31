@@ -1,0 +1,13 @@
+# Environment secrets (never commit real credentials)
+.env
+Backend/.env
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -4,6 +4,21 @@ const cors = require('cors');
 const path = require('path');
 const dotenv = require('dotenv');
 const dns = require('dns');
+const crypto = require('crypto');
+let adminApp = null;
+let adminAuth = null;
+let adminMessaging = null;
+try {
+  // firebase-admin v14 — modular subpath imports
+  const { initializeApp, cert } = require('firebase-admin/app');
+  const { getAuth } = require('firebase-admin/auth');
+  const { getMessaging } = require('firebase-admin/messaging');
+  adminApp = { initializeApp, cert };
+  adminAuth = getAuth;
+  adminMessaging = getMessaging;
+} catch (err) {
+  console.warn('WARNING: firebase-admin is not installed. Push notifications will be disabled.');
+}
 
 // Fix for Node.js DNS resolution issues on Windows
 dns.setDefaultResultOrder('ipv4first');
@@ -17,7 +32,13 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.set('trust proxy', 1);
 app.use(cors());
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf; // used for Sanity webhook signature verification
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true }));
 
 function escapeHtml(str) {
@@ -136,6 +157,75 @@ const ReviewHistorySchema = new mongoose.Schema({
 
 const Review = mongoose.model('Review', ReviewSchema);
 const ReviewHistory = mongoose.model('ReviewHistory', ReviewHistorySchema);
+
+// ── Push Notification (FCM) Model ──
+const PushRegistrationSchema = new mongoose.Schema({
+  userId: { type: String, default: '', index: true }, // '' = anonymous device subscription (no login)
+  email: { type: String, default: '' },
+  token: { type: String, required: true, unique: true, index: true },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  userAgent: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
+const PushRegistration = mongoose.model('PushRegistration', PushRegistrationSchema);
+
+// ── Firebase Admin SDK (server-side only — the private key never leaves this server) ──
+let fcmReady = false;
+
+function initFirebaseAdmin() {
+  if (!adminApp || fcmReady) return fcmReady;
+  try {
+    let serviceAccount = null;
+
+    // Option A: full service-account JSON string in one env var
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    }
+    // Option B: individual fields
+    else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // dotenv converts "\n" inside double-quoted values to real newlines; safety net below
+        privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\n/g, '\n'),
+      };
+    }
+
+    if (!serviceAccount || !serviceAccount.projectId) {
+      console.warn('WARNING: Firebase service-account credentials missing. Push notifications are disabled.');
+      return false;
+    }
+
+    adminApp.initializeApp({ credential: adminApp.cert(serviceAccount) });
+    fcmReady = true;
+    console.log('Firebase Admin SDK initialized.');
+    return true;
+  } catch (err) {
+    console.error('Error initializing Firebase Admin SDK:', err.message);
+    return false;
+  }
+}
+
+function getBearerToken(req) {
+  const header = req.headers.authorization || '';
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match ? match[1].trim() : null;
+}
+
+// Verifies the Firebase ID token sent by the frontend and returns the UID.
+// The UID always comes from the verified token — we never trust a client-sent userId.
+async function verifyFirebaseIdToken(req) {
+  if (!initFirebaseAdmin()) return { error: 'not_configured' };
+  const token = getBearerToken(req);
+  if (!token) return { error: 'no_token' };
+  try {
+    const decoded = await adminAuth().verifyIdToken(token);
+    return { uid: decoded.uid, email: decoded.email || '' };
+  } catch (err) {
+    return { error: 'invalid_token' };
+  }
+}
 
 // API Endpoints
 
@@ -417,6 +507,225 @@ app.get('/api/reviews/history', async (req, res) => {
   }
 });
 
+// ── Push Notification (FCM) Endpoints ──
+
+// Public, non-secret Firebase config used by the browser to set up FCM messaging.
+app.get('/api/notifications/config', (req, res) => {
+  res.json({
+    apiKey: process.env.FIREBASE_API_KEY || '',
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.FIREBASE_APP_ID || '',
+    vapidKey: process.env.VAPID_PUBLIC_KEY || '',
+    configured: Boolean(
+      process.env.FIREBASE_PROJECT_ID &&
+      process.env.FIREBASE_MESSAGING_SENDER_ID &&
+      process.env.FIREBASE_APP_ID &&
+      process.env.VAPID_PUBLIC_KEY
+    ),
+  });
+});
+
+// POST /api/notifications/subscribe  { token }  → saves this browser's FCM registration.
+// No login required: anonymous visitors can enable push notifications on their device.
+// If a valid Firebase ID token is supplied, the device is additionally linked to that user.
+app.post('/api/notifications/subscribe', async (req, res) => {
+  try {
+    if (!initFirebaseAdmin()) {
+      return res.status(503).json({ error: 'Push notifications are not configured on the server yet.' });
+    }
+
+    const { token } = req.body || {};
+    if (!token || typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ error: 'A valid FCM registration token is required.' });
+    }
+
+    const cleanToken = token.trim();
+
+    // Optional: link the device to a signed-in user if a valid ID token is provided.
+    let userId = '';
+    let email = '';
+    const auth = await verifyFirebaseIdToken(req);
+    if (!auth.error) {
+      userId = auth.uid;
+      email = auth.email || '';
+    }
+
+    await PushRegistration.findOneAndUpdate(
+      { token: cleanToken },
+      {
+        userId,
+        email,
+        status: 'active',
+        userAgent: String(req.headers['user-agent'] || '').slice(0, 300),
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+
+    console.log(`FCM registration saved${userId ? ` for user ${userId}` : ' (anonymous device)'}`);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error subscribing to notifications:', error);
+    return res.status(500).json({ error: 'Server error enabling notifications.' });
+  }
+});
+
+// POST /api/notifications/unsubscribe  { token }  → removes this device's registration (no login required)
+app.post('/api/notifications/unsubscribe', async (req, res) => {
+  try {
+    if (!initFirebaseAdmin()) {
+      return res.status(503).json({ error: 'Push notifications are not configured on the server yet.' });
+    }
+
+    const { token } = req.body || {};
+    if (!token || typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ error: 'A valid FCM registration token is required.' });
+    }
+
+    const result = await PushRegistration.deleteMany({ token: token.trim() });
+    console.log(`FCM registration removed (${result.deletedCount} deleted)`);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error unsubscribing from notifications:', error);
+    return res.status(500).json({ error: 'Server error disabling notifications.' });
+  }
+});
+
+// GET /api/notifications/status?token=<fcmToken> → whether THIS device is subscribed (no login required).
+// Signed-in users may omit the device token to check all registrations for their account.
+app.get('/api/notifications/status', async (req, res) => {
+  try {
+    if (!initFirebaseAdmin()) {
+      return res.status(503).json({ error: 'Push notifications are not configured on the server yet.' });
+    }
+
+    const deviceToken = String(req.query.token || '').trim();
+    if (deviceToken) {
+      const reg = await PushRegistration.findOne({ token: deviceToken, status: 'active' }).lean();
+      return res.json({ enabled: Boolean(reg) });
+    }
+
+    // Fallback: signed-in users can check by account.
+    const auth = await verifyFirebaseIdToken(req);
+    if (auth.error) {
+      return res.status(401).json({ error: 'A device token is required to check notification status.' });
+    }
+    const registrations = await PushRegistration.find({ userId: auth.uid, status: 'active' })
+      .select('token -_id')
+      .lean();
+    return res.json({ enabled: registrations.length > 0, tokens: registrations.map((r) => r.token) });
+  } catch (error) {
+    console.error('Error fetching notification status:', error);
+    return res.status(500).json({ error: 'Server error fetching notification status.' });
+  }
+});
+
+// Verifies a request is a genuine Sanity webhook (HMAC-SHA256 over the raw body).
+function isValidSanityWebhook(req) {
+  const secret = process.env.SANITY_WEBHOOK_SECRET;
+  if (!secret) return false;
+
+  // Manual-testing fallback header
+  if (req.headers['x-webhook-secret'] && req.headers['x-webhook-secret'] === secret) {
+    return true;
+  }
+
+  const signatureHeader = req.headers['sanity-webhook-signature'];
+  if (!signatureHeader || !req.rawBody) return false;
+
+  try {
+    const parts = {};
+    signatureHeader.split(',').forEach((pair) => {
+      const eq = pair.indexOf('=');
+      if (eq === -1) return;
+      parts[pair.slice(0, eq).trim()] = pair.slice(eq + 1).trim();
+    });
+
+    const timestamp = parts['t'];
+    const signature = parts['v1'];
+    if (!timestamp || !signature) return false;
+
+    const signedPayload = `${timestamp}.${req.rawBody.toString('utf8')}`;
+    const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+
+    const expectedBuf = Buffer.from(expected, 'hex');
+    const receivedBuf = Buffer.from(signature, 'hex');
+    if (expectedBuf.length !== receivedBuf.length) return false;
+    return crypto.timingSafeEqual(expectedBuf, receivedBuf);
+  } catch (err) {
+    console.error('Error verifying Sanity webhook signature:', err.message);
+    return false;
+  }
+}
+
+// POST /api/notifications/send → called by the Sanity webhook when a new post is published.
+app.post('/api/notifications/send', async (req, res) => {
+  if (!isValidSanityWebhook(req)) {
+    return res.status(401).json({ error: 'Invalid webhook signature.' });
+  }
+  if (!initFirebaseAdmin()) {
+    return res.status(503).json({ error: 'Push notifications are not configured on the server yet.' });
+  }
+
+  try {
+    const body = req.body || {};
+
+    // Only notify for public blog/premium posts — skip private posts and journal entries.
+    if (body.isPrivate || body.postType === 'journal') {
+      return res.json({ success: true, skipped: true, reason: 'private_or_journal' });
+    }
+
+    const title = body.title || 'New Blog Published';
+    const slug = (body.slug && body.slug.current) || body.slug || '';
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+    const postUrl = slug ? `${baseUrl}/post.html?slug=${encodeURIComponent(slug)}` : `${baseUrl}/`;
+
+    const tokens = await PushRegistration.find({ status: 'active' }).distinct('token');
+
+    let sent = 0;
+    let failed = 0;
+    const invalidTokens = [];
+
+    for (const token of tokens) {
+      const message = {
+        token,
+        notification: { title: 'New Blog Published', body: title },
+        data: { url: postUrl, slug: String(slug) },
+        webpush: {
+          headers: { TTL: '604800' },
+          fcmOptions: { link: postUrl },
+        },
+      };
+      try {
+        await adminMessaging().send(message);
+        sent += 1;
+      } catch (err) {
+        failed += 1;
+        const code = err.code || '';
+        if (
+          code === 'messaging/registration-token-not-registered' ||
+          code === 'messaging/invalid-registration-token'
+        ) {
+          invalidTokens.push(token);
+        }
+      }
+    }
+
+    if (invalidTokens.length > 0) {
+      await PushRegistration.deleteMany({ token: { $in: invalidTokens } });
+    }
+
+    console.log(
+      `Notification broadcast: ${sent} sent, ${failed} failed, ${invalidTokens.length} stale token(s) removed.`
+    );
+    return res.json({ success: true, sent, failed, removed: invalidTokens.length });
+  } catch (error) {
+    console.error('Error sending notifications:', error);
+    return res.status(500).json({ error: 'Server error sending notifications.' });
+  }
+});
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on ${process.env.BASE_URL || `http://localhost:${PORT}`}`);

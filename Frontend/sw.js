@@ -1,3 +1,7 @@
+/* NOTE: This service worker is superseded by firebase-messaging-sw.js.
+   All pages now register firebase-messaging-sw.js, which merges this
+   app-shell caching with Firebase Cloud Messaging. This file is kept
+   only as a fallback for older cached installs. */
 const CACHE_NAME = 'anubhav-v1';
 const urlsToCache = [
   'index.html',
