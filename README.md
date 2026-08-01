@@ -123,6 +123,43 @@ curl -X POST http://localhost:5000/api/notifications/send \
 - Private posts and journal entries are **skipped**; only public blog/premium posts trigger notifications.
 - Clicking a notification opens `post.html?slug=…` for that post.
 
+### Troubleshooting
+
+**Error: `Registration failed - push service not available` (AbortError) when enabling notifications**
+
+This is thrown by the browser (Chrome/Edge) when its push registration with the
+FCM push service fails. Since `getToken()` runs only after the backend config
+was loaded, this is **not** a “server not configured” issue. Check, in order:
+
+1. **Enable the FCM Registration API** — In the Google Cloud console, make sure
+   the **Firebase Cloud Messaging API** is enabled for the project (Firebase →
+   Project settings → top-right *Usage and billing*, or
+   console.cloud.google.com/apis → search “Firebase Cloud Messaging API” →
+   Enable). FCM web requires this for the SDK version used here.
+2. **VAPID key must belong to the project** — `VAPID_PUBLIC_KEY` in `Backend/.env`
+   must be the public key shown in Firebase → Project settings → **Cloud
+   Messaging** tab → *Web Push certificates*. If you generated keys elsewhere
+   (e.g. `npx web-push generate-vapid-keys`), import that key pair into the
+   Firebase console (*Web Push certificates* → *Import a key pair*) so the
+   project and key match.
+3. **Sender ID** — `FIREBASE_MESSAGING_SENDER_ID` must be the numeric sender ID
+   from the same **Cloud Messaging** tab (not the project ID).
+4. **Stale browser subscription** — push subscriptions live **per browser, per
+   origin** (they are not shared across PCs or phones). If you tried enabling
+   notifications while the env/keys were still being set up, Chrome may hold a
+   broken subscription that blocks re-registration. The app now auto-clears it
+   and retries, but the guaranteed fix is: DevTools (F12) → **Application** →
+   **Storage** → **Clear site data** (note: this also wipes local sign-in and the
+   saved theme), reload, then enable again. A leftover
+   `sw.js` registration (from older installs) is also auto-replaced now —
+   hard-refresh (Ctrl+Shift+R) once after deploying.
+
+Other notes:
+
+- **Firefox** is not supported by FCM web push — the app shows a clear message.
+  Use Chrome, Edge, or Opera.
+- The site must be served over **HTTPS** (or `http://localhost`).
+
 ## Khalti payments
 
 Premium subscription flow:

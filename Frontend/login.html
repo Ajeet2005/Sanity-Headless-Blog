@@ -61,12 +61,14 @@
     </div>
 
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      // Self-hosted Firebase SDK (vendor/) — the gstatic CDN is blocked by
+      // browser tracking prevention (Edge/Brave), breaking login too.
+      import { initializeApp } from "./vendor/firebase-app.js";
       import {
         getAuth,
         onAuthStateChanged,
         signInWithEmailAndPassword,
-      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      } from "./vendor/firebase-auth.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0",

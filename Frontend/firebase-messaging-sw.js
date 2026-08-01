@@ -11,10 +11,12 @@
    one place: the backend .env file.
    ───────────────────────────────────────────────────────────── */
 
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
+// Self-hosted FCM SDK (Frontend/vendor/) — the gstatic CDN is blocked by
+// browser tracking prevention (Edge/Brave), which breaks push registration.
+importScripts('./vendor/firebase-app-compat.js');
+importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v1';
+const CACHE_NAME = 'anubhav-v2'; // bumped when cached payload changes (vendor SDK files)
 const urlsToCache = [
   'index.html',
   'journal.html',
@@ -22,6 +24,10 @@ const urlsToCache = [
   'post.html',
   'favicon.png',
   'manifest.json',
+  'vendor/firebase-app-compat.js',
+  'vendor/firebase-messaging-compat.js',
+  'vendor/firebase-app.js',
+  'vendor/firebase-auth.js',
 ];
 
 // Fallback config — the real values are loaded from the backend at install time.

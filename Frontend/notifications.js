@@ -21,7 +21,11 @@
   const bell = document.getElementById('notif-btn');
   if (!bell) return;
 
-  const FIREBASE_CDN = 'https://www.gstatic.com/firebasejs/10.12.0/';
+  // Self-hosted FCM SDK (Frontend/vendor/). Loading from Google's CDN
+  // (www.gstatic.com) gets blocked by browser tracking prevention (e.g.
+  // Microsoft Edge) and some privacy browsers, which breaks push registration.
+  // Same-origin files are immune to that and also load faster.
+  const FIREBASE_BASE = 'vendor/';
   const FCM_APP_NAME = 'anubhav-notifications';
   const TOKEN_STORAGE_KEY = 'fcmToken';
 
@@ -91,6 +95,15 @@
           'On iPhone/iPad, notifications need iOS 16.4+ and this site added to your Home Screen: tap Share → Add to Home Screen, open the app from there, then enable notifications.',
       };
     }
+    // Firefox: FCM (Firebase push) is not supported — messaging.getToken() fails there.
+    if (/Firefox\//i.test(navigator.userAgent)) {
+      return {
+        supported: false,
+        title: 'Firefox not supported',
+        message:
+          'Firebase push notifications are not available in Firefox. Use Chrome, Edge, or Opera to enable notifications.',
+      };
+    }
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
       if (isIOS()) {
         return {
@@ -149,8 +162,8 @@
   let firebaseReady = null;
   function ensureFirebase() {
     if (!firebaseReady) {
-      firebaseReady = loadScript(FIREBASE_CDN + 'firebase-app-compat.js')
-        .then(() => loadScript(FIREBASE_CDN + 'firebase-messaging-compat.js'))
+      firebaseReady = loadScript(FIREBASE_BASE + 'firebase-app-compat.js')
+        .then(() => loadScript(FIREBASE_BASE + 'firebase-messaging-compat.js'))
         .then(() => true)
         .catch((err) => {
           firebaseReady = null;
@@ -215,6 +228,7 @@
   function openPopup() {
     popup.classList.remove('notif-hidden');
     fetchConfig(); // warm the config cache so Enable doesn't need a network round-trip
+    ensureFirebase().catch(() => {}); // pre-load the FCM SDK so Enable is fast
     refreshStatus();
   }
 
@@ -250,6 +264,101 @@
 
   /* ── enable / disable ── */
 
+  /* True for the push-service registration failures Chrome throws as AbortError
+     ("Registration failed - push service not available"). */
+  function isPushServiceError(err) {
+    return (
+      (err && err.name === 'AbortError') ||
+      /push service not available|registration failed|token-subscribe-failed/i.test(
+        String((err && err.message) || err)
+      )
+    );
+  }
+
+  /* A page can only have one service worker per scope. Older installs may still
+     run sw.js — return a registration whose active worker is
+     firebase-messaging-sw.js, replacing it if not. */
+  async function ensureFcmRegistration() {
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.active) {
+      const scriptUrl = reg.active.scriptURL || '';
+      if (!scriptUrl.endsWith('firebase-messaging-sw.js')) {
+        await reg.unregister().catch(() => {});
+        reg = null;
+      }
+    }
+    if (!reg) {
+      reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    }
+    return reg;
+  }
+
+  /* Ask FCM for a registration token. Browsers sometimes fail with
+     "Registration failed - push service error" when a broken/stale push
+     subscription is still attached to the service worker (e.g. from an earlier
+     attempt with a different VAPID key). Recovery ladder:
+       1. drop the stale subscription and retry once;
+       2. if that still fails, re-register the service worker (resets all push
+          state for the origin) and retry a final time. */
+  async function getFcmToken(messaging, registration, vapidKey) {
+    const opts = { vapidKey, serviceWorkerRegistration: registration };
+    try {
+      return await messaging.getToken(opts);
+    } catch (err) {
+      // Only recover for a real push-service failure — never destroy a working
+      // subscription because of a transient network error.
+      if (!isPushServiceError(err)) throw err;
+      const existing = await registration.pushManager.getSubscription().catch(() => null);
+      if (existing) {
+        console.warn('getToken failed — removing stale push subscription and retrying:', err);
+        await existing.unsubscribe().catch(() => {});
+        // Give the push service a moment to forget the old subscription.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      try {
+        return await messaging.getToken(opts);
+      } catch (err2) {
+        if (!isPushServiceError(err2)) throw err2;
+        // Second attempt failed too — some browsers (Edge, Brave) keep broken
+        // push state attached to the worker. Re-registering resets it fully.
+        console.warn('getToken failed again — re-registering the service worker:', err2);
+        try {
+          await registration.unregister().catch(() => {});
+          const fresh = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+          await navigator.serviceWorker.ready;
+          return await messaging.getToken({ vapidKey, serviceWorkerRegistration: fresh });
+        } catch (recoverErr) {
+          // Keep the original push-service error if the recovery itself fails.
+          console.warn('Service-worker re-registration recovery failed:', recoverErr);
+          throw err2;
+        }
+      }
+    }
+  }
+
+  /* Turn raw push-registration errors into guidance the user can act on. */
+  function describePushError(err) {
+    const code = (err && err.code) || '';
+    const raw = String((err && err.message) || err);
+    if (isPushServiceError(err)) {
+      const braveNote = /Brave/i.test(navigator.userAgent)
+        ? 'Brave blocks Google\'s push service by default — open brave://settings/?search=push and turn ON "Use Google services for push notifications", then try again.\n'
+        : '';
+      return (
+        braveNote +
+        'Your browser could not register with the push service (FCM). If the backend .env matches your Firebase console, this is almost always a browser-side block. Try, in order:\n' +
+        '1) Open the site in an Incognito window (Ctrl+Shift+N) and Enable again — works there? Then an extension, profile state, or setting is blocking push.\n' +
+        '2) In Microsoft Edge/Chrome: DevTools (F12) → Application → Storage → "Clear site data" (also clears local sign-in), reload, then retry — stale push state from earlier attempts is the usual culprit.\n' +
+        '3) Disable ad-blocker / privacy / VPN extensions, then retry.\n' +
+        '4) Check chrome://push-internals/ (or edge://push-internals/) for the exact push-service error.\n' +
+        'Details: ' +
+        (code ? code + ' — ' : '') +
+        raw
+      );
+    }
+    return raw || 'Something went wrong while enabling notifications. Please try again.';
+  }
+
   async function enableNotifications() {
     noteEl.textContent = '';
     noteEl.style.display = 'none';
@@ -282,23 +391,30 @@
         return;
       }
 
+      actionBtn.textContent = 'Connecting to the push service…';
       await ensureFirebase();
 
-      let registration = await navigator.serviceWorker.getRegistration();
-      if (!registration) {
-        registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
-      }
+      // A page can only have one service worker per scope. If an older install
+      // still runs sw.js, replace it with firebase-messaging-sw.js.
+      let registration = await ensureFcmRegistration();
       // Make sure the FCM service worker is active before asking for a token
       await navigator.serviceWorker.ready;
+      // Re-check now that an active worker exists, so a stale sw.js can never
+      // be handed to getToken()
+      registration = await ensureFcmRegistration();
+      if (registration && !registration.active) {
+        // Guard: the re-check may have just re-registered the SW (installing) —
+        // wait for it to activate before subscribing.
+        await navigator.serviceWorker.ready;
+        registration = await ensureFcmRegistration();
+      }
 
       let app = firebase.apps.find((a) => a.name === FCM_APP_NAME);
       if (!app) app = firebase.initializeApp(cfg, FCM_APP_NAME);
       const messaging = firebase.messaging(app);
 
-      const token = await messaging.getToken({
-        vapidKey: cfg.vapidKey,
-        serviceWorkerRegistration: registration,
-      });
+      actionBtn.textContent = 'Saving…';
+      const token = await getFcmToken(messaging, registration, cfg.vapidKey);
 
       const headers = { 'Content-Type': 'application/json' };
       const authToken = idToken();
@@ -319,7 +435,7 @@
       renderState('enabled');
     } catch (err) {
       console.error('Enable notifications error:', err);
-      renderState('default', 'Something went wrong while enabling notifications. Please try again.');
+      renderState('default', describePushError(err), 'Notifications');
     } finally {
       actionBtn.disabled = false;
     }
@@ -426,7 +542,11 @@
         line-height: 1;
       }
       .notif-popup-close:hover { color: var(--text); background: var(--tag-hover-bg); }
-      .notif-popup-body { padding: 16px; }
+      .notif-popup-body {
+        padding: 16px;
+        max-height: calc(100vh - 170px);
+        overflow-y: auto;
+      }
       .notif-popup-body p {
         font-size: 0.88rem;
         color: var(--text-muted);
@@ -457,6 +577,8 @@
         margin-top: 12px !important;
         margin-bottom: 0 !important;
         font-size: 0.8rem !important;
+        line-height: 1.5 !important;
+        white-space: pre-line;
         color: #dc2626 !important;
       }
       @media (max-width: 640px) {
