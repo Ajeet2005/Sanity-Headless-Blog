@@ -125,7 +125,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (response.status === 200 && !event.request.url.includes('/api/')) {
+        if (
+          response.status === 200 &&
+          event.request.method === 'GET' &&
+          !event.request.url.includes('/api/')
+        ) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
