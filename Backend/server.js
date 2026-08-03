@@ -78,7 +78,7 @@ app.get('/post.html', async (req, res) => {
     if (!post) {
       return res.sendFile(filePath);
     }
-
+//
     // Read the static post.html template
     const fs = require('fs').promises;
     let html = await fs.readFile(filePath, 'utf8');
