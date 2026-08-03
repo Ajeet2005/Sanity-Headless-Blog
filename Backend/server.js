@@ -510,7 +510,14 @@ app.get('/api/reviews/history', async (req, res) => {
 // ── Push Notification (FCM) Endpoints ──
 
 // Public, non-secret Firebase config used by the browser to set up FCM messaging.
+// Includes diagnostics (no secrets): which credential mode the server sees and
+// whether the Admin SDK actually initialized — lets you tell apart "env vars
+// missing" from "env vars malformed" straight from the browser console.
 app.get('/api/notifications/config', (req, res) => {
+  const hasServiceAccountJson = Boolean(process.env.FIREBASE_SERVICE_ACCOUNT);
+  const hasIndividualCreds = Boolean(
+    process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY
+  );
   res.json({
     apiKey: process.env.FIREBASE_API_KEY || '',
     authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
@@ -524,6 +531,12 @@ app.get('/api/notifications/config', (req, res) => {
       process.env.FIREBASE_APP_ID &&
       process.env.VAPID_PUBLIC_KEY
     ),
+    adminSdkReady: fcmReady,
+    credentialMode: hasServiceAccountJson
+      ? 'service_account_json'
+      : hasIndividualCreds
+      ? 'individual_fields'
+      : 'missing',
   });
 });
 
@@ -726,6 +739,14 @@ app.post('/api/notifications/send', async (req, res) => {
     return res.status(500).json({ error: 'Server error sending notifications.' });
   }
 });
+// Try to initialize Firebase Admin at boot so the startup log shows the real
+// status right away (instead of only logging the first time a notification
+// endpoint is hit).
+const fcmBootReady = initFirebaseAdmin();
+console.log(
+  `Push notifications: ${fcmBootReady ? 'Firebase Admin SDK ready' : 'NOT configured (see warning/error above)'}`
+);
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on ${process.env.BASE_URL || `http://localhost:${PORT}`}`);
