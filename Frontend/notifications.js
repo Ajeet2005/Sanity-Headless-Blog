@@ -51,6 +51,12 @@
     );
   }
 
+  // Returns e.g. 16.4 for iOS/iPadOS 16.4, or 0 when it can't be determined.
+  function iosVersion() {
+    const m = (navigator.userAgent || '').match(/OS (\d+)[_.](\d+)/);
+    return m ? parseFloat(m[1] + '.' + m[2]) : 0;
+  }
+
   function isStandalonePwa() {
     return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   }
@@ -83,16 +89,24 @@
           'Notifications only work on a secure (https://) connection. Open the site via https or the deployed URL, then try again.',
       };
     }
-    // iOS: on iOS 16.4+ Safari, the Notification API exists but push only works
-    // when the site is installed as a PWA (added to Home Screen). Check this FIRST
-    // so non-installed iPhones get install instructions instead of a confusing
-    // auto-denied permission flow.
+    // iOS: web push only works on iOS/iPadOS 16.4+ AND when the site is installed
+    // as a PWA (added to Home Screen) — Apple does not allow push from Safari
+    // itself. Guide the user to install rather than showing a confusing flow.
     if (isIOS() && !isStandalonePwa()) {
+      const ver = iosVersion();
+      if (ver && ver < 16.4) {
+        return {
+          supported: false,
+          title: 'Update iOS first',
+          message:
+            'Web notifications on iPhone/iPad require iOS 16.4 or later. Go to Settings → General → Software Update, update, then try again.',
+        };
+      }
       return {
         supported: false,
         title: 'Add to Home Screen first',
         message:
-          'On iPhone/iPad, notifications need iOS 16.4+ and this site added to your Home Screen: tap Share → Add to Home Screen, open the app from there, then enable notifications.',
+          'On iPhone/iPad, web notifications only work after installing this site as an app: tap the Share button (⬆️) → Add to Home Screen → open it from your Home Screen, then enable notifications. Requires iOS 16.4+.',
       };
     }
     // Firefox: FCM (Firebase push) is not supported — messaging.getToken() fails there.
@@ -412,6 +426,7 @@
       let app = firebase.apps.find((a) => a.name === FCM_APP_NAME);
       if (!app) app = firebase.initializeApp(cfg, FCM_APP_NAME);
       const messaging = firebase.messaging(app);
+      registerForegroundHandler(messaging);
 
       actionBtn.textContent = 'Saving…';
       const token = await getFcmToken(messaging, registration, cfg.vapidKey);
@@ -613,6 +628,50 @@
     actionBtn.addEventListener('click', handleAction);
   }
 
+  /* ── foreground messages (site tab open) ── */
+
+  let foregroundRegistered = false;
+
+  /* Without this, FCM messages are only shown by the service worker while the
+     site is CLOSED — an open, focused tab swallows the push. This displays the
+     notification in the foreground too. */
+  function registerForegroundHandler(messaging) {
+    if (foregroundRegistered) return;
+    foregroundRegistered = true;
+    messaging.onMessage((payload) => {
+      const notif = (payload && payload.notification) || {};
+      const title = notif.title || 'New Blog Published';
+      const body = notif.body || '';
+      const icon = notif.icon || '/favicon.png';
+      const url = (payload.data && payload.data.url) || '/';
+      try {
+        const n = new Notification(title, { body, icon });
+        n.onclick = () => {
+          n.close();
+          window.focus();
+          if (url) window.location.href = url;
+        };
+      } catch (err) {
+        /* Notification API unavailable in this context */
+      }
+    });
+  }
+
+  /* For users who already enabled notifications: register the foreground
+     handler on page load, without needing to open the bell. */
+  function initForegroundMessaging() {
+    fetchConfig()
+      .then((cfg) => {
+        if (!cfg || !cfg.configured) return;
+        return ensureFirebase().then(() => {
+          let app = firebase.apps.find((a) => a.name === FCM_APP_NAME);
+          if (!app) app = firebase.initializeApp(cfg, FCM_APP_NAME);
+          registerForegroundHandler(firebase.messaging(app));
+        });
+      })
+      .catch(() => {});
+  }
+
   /* ── wiring ── */
 
   bell.addEventListener('click', (event) => {
@@ -641,4 +700,5 @@
   injectStyles();
   buildPopup();
   renderState('default');
+  initForegroundMessaging();
 })();

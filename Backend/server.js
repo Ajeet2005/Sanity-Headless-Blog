@@ -678,9 +678,19 @@ function isValidSanityWebhook(req) {
   }
 }
 
+// Builds a public Sanity CDN image URL from an image asset reference
+// (e.g. "image-abc123-800x600-jpg" → https://cdn.sanity.io/images/xsd8o1za/production/abc123-800x600.jpg)
+function sanityImageUrl(ref) {
+  if (!ref || typeof ref !== 'string') return '';
+  const m = ref.match(/^image-([A-Za-z0-9]+)-(\d+)x(\d+)-([a-z]+)$/);
+  if (!m) return '';
+  return `https://cdn.sanity.io/images/xsd8o1za/production/${m[1]}-${m[2]}x${m[3]}.${m[4]}`;
+}
+
 // POST /api/notifications/send → called by the Sanity webhook when a new post is published.
 app.post('/api/notifications/send', async (req, res) => {
   if (!isValidSanityWebhook(req)) {
+    console.warn('Webhook rejected: missing/invalid signature (check SANITY_WEBHOOK_SECRET in Render matches the Sanity webhook secret).');
     return res.status(401).json({ error: 'Invalid webhook signature.' });
   }
   if (!initFirebaseAdmin()) {
@@ -690,15 +700,17 @@ app.post('/api/notifications/send', async (req, res) => {
   try {
     const body = req.body || {};
 
-    // Only notify for public blog/premium posts — skip private posts and journal entries.
-    if (body.isPrivate || body.postType === 'journal') {
-      return res.json({ success: true, skipped: true, reason: 'private_or_journal' });
-    }
-
+    // Notify for ALL published posts — blog, premium, journal, private — every category.
     const title = body.title || 'New Blog Published';
     const slug = (body.slug && body.slug.current) || body.slug || '';
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const postUrl = slug ? `${baseUrl}/post.html?slug=${encodeURIComponent(slug)}` : `${baseUrl}/`;
+
+    // Rich notification: post title, excerpt as the body, and the cover image.
+    const ogRef = body.ogImage && body.ogImage.asset && body.ogImage.asset._ref;
+    const mainRef = body.mainImage && body.mainImage.asset && body.mainImage.asset._ref;
+    const imageUrl = sanityImageUrl(ogRef || mainRef);
+    const notifBody = (body.excerpt && String(body.excerpt).trim()) || 'New blog post published';
 
     const tokens = await PushRegistration.find({ status: 'active' }).distinct('token');
 
@@ -707,13 +719,21 @@ app.post('/api/notifications/send', async (req, res) => {
     const invalidTokens = [];
 
     for (const token of tokens) {
+      // Web-only tokens: put everything in webpush.notification (a top-level
+      // `notification` alongside it would conflict in FCM's validator).
       const message = {
         token,
-        notification: { title: 'New Blog Published', body: title },
         data: { url: postUrl, slug: String(slug) },
         webpush: {
           headers: { TTL: '604800' },
           fcmOptions: { link: postUrl },
+          notification: {
+            title,
+            body: notifBody,
+            icon: imageUrl || `${baseUrl}/favicon.png`,
+            image: imageUrl || `${baseUrl}/favicon.png`,
+            badge: `${baseUrl}/favicon.png`,
+          },
         },
       };
       try {

@@ -55,15 +55,18 @@ const app = firebase.initializeApp(FIREBASE_CONFIG, FCM_APP_NAME);
 const messaging = firebase.messaging(app);
 
 // Display background notifications received while the tab is closed.
+// Passes through the post title, excerpt, cover image and badge sent by the server.
 messaging.onBackgroundMessage((payload) => {
-  const title =
-    (payload.notification && payload.notification.title) || 'New Blog Published';
-  const body = (payload.notification && payload.notification.body) || '';
+  const notif = (payload && payload.notification) || {};
+  const title = notif.title || 'New Blog Published';
+  const body = notif.body || '';
   const url = (payload.data && payload.data.url) || '/';
+  const icon = notif.icon || '/favicon.png';
   self.registration.showNotification(title, {
     body,
-    icon: '/favicon.png',
-    badge: '/favicon.png',
+    icon,
+    image: notif.image || icon, // big cover image (Chrome/Edge/Android); ignored elsewhere
+    badge: notif.badge || '/favicon.png',
     data: { url },
   });
 });

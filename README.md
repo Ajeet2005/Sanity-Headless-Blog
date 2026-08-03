@@ -120,7 +120,7 @@ curl -X POST http://localhost:5000/api/notifications/send \
 ### Notes
 
 - **HTTPS or localhost is required** — browsers only allow notifications (and service workers) on secure origins.
-- Private posts and journal entries are **skipped**; only public blog/premium posts trigger notifications.
+- **Every** published post triggers a notification (blog, premium, journal, private — all categories).
 - Clicking a notification opens `post.html?slug=…` for that post.
 
 ### Troubleshooting
