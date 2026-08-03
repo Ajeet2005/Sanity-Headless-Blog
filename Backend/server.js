@@ -181,6 +181,11 @@ function initFirebaseAdmin() {
     // Option A: full service-account JSON string in one env var
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      // Real Firebase service-account JSON uses snake_case keys ("project_id").
+      // Normalize to camelCase so the readiness check below accepts it.
+      if (serviceAccount && serviceAccount.project_id && !serviceAccount.projectId) {
+        serviceAccount.projectId = serviceAccount.project_id;
+      }
     }
     // Option B: individual fields
     else if (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {

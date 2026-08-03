@@ -6,9 +6,14 @@
      1. PWA app-shell caching (carried over from sw.js)
      2. FCM background notifications + click handling
 
-   The public Firebase config is fetched from the backend at
-   install time (/api/notifications/config) so it only lives in
-   one place: the backend .env file.
+   IMPORTANT: Firebase Messaging MUST be initialized at the TOP
+   LEVEL of this script. Browsers only allow the 'push',
+   'notificationclick', 'pushsubscriptionchange' and
+   'notificationclose' listeners to be registered during the
+   initial evaluation of the worker script — initializing inside
+   install/activate triggers "Event handler of 'push' event must
+   be added on the initial evaluation of worker script" and
+   background notifications can break.
    ───────────────────────────────────────────────────────────── */
 
 // Self-hosted FCM SDK (Frontend/vendor/) — the gstatic CDN is blocked by
@@ -16,7 +21,7 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v2'; // bumped when cached payload changes (vendor SDK files)
+const CACHE_NAME = 'anubhav-v3'; // bumped when cached payload changes (vendor SDK files)
 const urlsToCache = [
   'index.html',
   'journal.html',
@@ -30,66 +35,53 @@ const urlsToCache = [
   'vendor/firebase-auth.js',
 ];
 
-// Fallback config — the real values are loaded from the backend at install time.
-const FALLBACK_FIREBASE_CONFIG = {
+// Public Firebase web config. These are PUBLIC values (safe to ship in the
+// browser) and must match the FIREBASE_* values in Backend/.env — the same
+// ones the backend exposes at /api/notifications/config.
+const FIREBASE_CONFIG = {
   apiKey: 'AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0',
   authDomain: 'sanity-blog-auth.firebaseapp.com',
   projectId: 'sanity-blog-auth',
-  messagingSenderId: '', // ← filled from /api/notifications/config
-  appId: '',             // ← filled from /api/notifications/config
+  messagingSenderId: '552042411059',
+  appId: '1:552042411059:web:14265a745e929b19659f46',
 };
 
 const FCM_APP_NAME = 'anubhav-notifications';
-let firebaseConfig = FALLBACK_FIREBASE_CONFIG;
 
-/* Install: fetch the public Firebase config + pre-cache the app shell */
+/* ── Initialize Firebase Messaging at the TOP LEVEL ──
+   Registers the push/notificationclick/etc. listeners during the initial
+   evaluation of the worker script, as browsers require. */
+const app = firebase.initializeApp(FIREBASE_CONFIG, FCM_APP_NAME);
+const messaging = firebase.messaging(app);
+
+// Display background notifications received while the tab is closed.
+messaging.onBackgroundMessage((payload) => {
+  const title =
+    (payload.notification && payload.notification.title) || 'New Blog Published';
+  const body = (payload.notification && payload.notification.body) || '';
+  const url = (payload.data && payload.data.url) || '/';
+  self.registration.showNotification(title, {
+    body,
+    icon: '/favicon.png',
+    badge: '/favicon.png',
+    data: { url },
+  });
+});
+
+/* Install: pre-cache the app shell */
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    (async () => {
-      try {
-        const res = await fetch('/api/notifications/config', { cache: 'no-store' });
-        const cfg = await res.json();
-        if (cfg && cfg.projectId && cfg.messagingSenderId) {
-          firebaseConfig = cfg;
-        }
-      } catch (err) {
-        /* keep fallback */
-      }
-      const cache = await caches.open(CACHE_NAME);
-      await cache.addAll(urlsToCache);
-      return self.skipWaiting();
-    })()
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
+      .then(() => self.skipWaiting())
   );
 });
 
-/* Activate: init FCM, claim pages, clean old caches */
+/* Activate: claim pages, clean old caches */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      try {
-        let app = firebase.apps.find((a) => a.name === FCM_APP_NAME);
-        if (!app) {
-          app = firebase.initializeApp(firebaseConfig, FCM_APP_NAME);
-        }
-        const messaging = firebase.messaging(app);
-
-        // Display background notifications received while the tab is closed
-        messaging.onBackgroundMessage((payload) => {
-          const title =
-            (payload.notification && payload.notification.title) || 'New Blog Published';
-          const body = (payload.notification && payload.notification.body) || '';
-          const url = (payload.data && payload.data.url) || '/';
-          self.registration.showNotification(title, {
-            body,
-            icon: '/favicon.png',
-            badge: '/favicon.png',
-            data: { url },
-          });
-        });
-      } catch (err) {
-        console.error('FCM init failed:', err);
-      }
-
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames
@@ -120,7 +112,8 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 /* Network-first fetch with cache fallback (PWA offline support).
-   API requests are never cached. */
+   Only successful GET requests are cached — never POST/PUT/etc. and
+   never /api/ calls. */
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
