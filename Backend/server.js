@@ -641,17 +641,23 @@ app.get('/api/notifications/status', async (req, res) => {
 });
 
 // Verifies a request is a genuine Sanity webhook (HMAC-SHA256 over the raw body).
-function isValidSanityWebhook(req) {
+// Sanity signs every request with `sanity-webhook-signature: t=<ts>,v1=<hmac>`,
+// where hmac = HMAC-SHA256(secret, `${timestamp}.${rawBody}`).
+// Returns { valid: true } or { valid: false, reason } so failures can be logged
+// with the exact cause instead of a generic "bad signature".
+function verifySanityWebhook(req) {
   const secret = process.env.SANITY_WEBHOOK_SECRET;
-  if (!secret) return false;
-
-  // Manual-testing fallback header
-  if (req.headers['x-webhook-secret'] && req.headers['x-webhook-secret'] === secret) {
-    return true;
+  if (!secret) {
+    return { valid: false, reason: 'SANITY_WEBHOOK_SECRET is not set on the server' };
   }
 
   const signatureHeader = req.headers['sanity-webhook-signature'];
-  if (!signatureHeader || !req.rawBody) return false;
+  if (!signatureHeader) {
+    return { valid: false, reason: 'missing sanity-webhook-signature header' };
+  }
+  if (!req.rawBody || req.rawBody.length === 0) {
+    return { valid: false, reason: 'missing raw request body' };
+  }
 
   try {
     const parts = {};
@@ -663,18 +669,31 @@ function isValidSanityWebhook(req) {
 
     const timestamp = parts['t'];
     const signature = parts['v1'];
-    if (!timestamp || !signature) return false;
+    if (!timestamp || !signature) {
+      return { valid: false, reason: 'signature header missing t= or v1= part' };
+    }
+
+    // Replay protection: Sanity signs with an epoch-millisecond timestamp.
+    // Reject stale signatures (clock-skew tolerant, 5 minute window).
+    const ts = Number(timestamp);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > 5 * 60 * 1000) {
+      return { valid: false, reason: 'stale signature timestamp (possible replay)' };
+    }
 
     const signedPayload = `${timestamp}.${req.rawBody.toString('utf8')}`;
     const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
 
     const expectedBuf = Buffer.from(expected, 'hex');
     const receivedBuf = Buffer.from(signature, 'hex');
-    if (expectedBuf.length !== receivedBuf.length) return false;
-    return crypto.timingSafeEqual(expectedBuf, receivedBuf);
+    if (expectedBuf.length !== receivedBuf.length) {
+      return { valid: false, reason: 'signature length mismatch' };
+    }
+    if (!crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
+      return { valid: false, reason: 'signature mismatch (secret differs from the Sanity webhook secret?)' };
+    }
+    return { valid: true };
   } catch (err) {
-    console.error('Error verifying Sanity webhook signature:', err.message);
-    return false;
+    return { valid: false, reason: `error verifying signature: ${err.message}` };
   }
 }
 
@@ -689,17 +708,29 @@ function sanityImageUrl(ref) {
 
 // POST /api/notifications/send → called by the Sanity webhook when a new post is published.
 app.post('/api/notifications/send', async (req, res) => {
-  if (!isValidSanityWebhook(req)) {
-    console.warn('Webhook rejected: missing/invalid signature (check SANITY_WEBHOOK_SECRET in Render matches the Sanity webhook secret).');
+  const webhookCheck = verifySanityWebhook(req);
+  if (!webhookCheck.valid) {
+    console.warn(`Webhook rejected: ${webhookCheck.reason}`);
     return res.status(401).json({ error: 'Invalid webhook signature.' });
   }
+
+  const body = req.body || {};
+
+  // Sanity fires webhooks when a draft is saved too (document.create). Drafts have
+  // _id like "drafts.<id>". Only notify for actually-published posts so writing a
+  // draft doesn't spam subscribers, and publishing fires exactly one notification.
+  // Checked before the Firebase check so drafts are ignored even if FCM is down.
+  const docId = body._id ? String(body._id) : '';
+  if (docId.startsWith('drafts.')) {
+    console.log(`Webhook ignored: draft document ${docId} (no notification sent).`);
+    return res.json({ success: true, skipped: 'draft' });
+  }
+
   if (!initFirebaseAdmin()) {
     return res.status(503).json({ error: 'Push notifications are not configured on the server yet.' });
   }
 
   try {
-    const body = req.body || {};
-
     // Notify for ALL published posts — blog, premium, journal, private — every category.
     const title = body.title || 'New Blog Published';
     const slug = (body.slug && body.slug.current) || body.slug || '';

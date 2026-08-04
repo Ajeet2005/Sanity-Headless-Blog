@@ -97,25 +97,48 @@ From the Firebase Console → Project settings:
 
 ### 2. Create the Sanity webhook
 
+> ⚠️ **This is the most common reason notifications never arrive.** The webhook
+> must actually exist in the Sanity dashboard with the same secret as
+> `SANITY_WEBHOOK_SECRET` on the server. The blog still updates on the website
+> without it (the frontend reads Sanity's CDN directly), so this fails silently.
+
 1. Sanity project → **API** → **Webhooks** → *Create webhook*.
 2. **URL**: `https://<your-backend-url>/api/notifications/send`
 3. **HTTP method**: `POST`
-4. **Trigger**: `Create` (document.create)
-5. **Filter** (optional): `*[_type == "post"]`
-6. **Secret**: paste the same value as `SANITY_WEBHOOK_SECRET` in `.env`.
+4. **Trigger**: `Create` (document.create) — publishing a post creates the
+   published document and fires exactly one notification. Draft saves are
+   skipped automatically by the server (see below).
+5. **Filter**: `*[_type == "post"]`
+6. **Secret**: paste **the same value** as `SANITY_WEBHOOK_SECRET` in `Backend/.env`.
 
-Sanity signs every request with an HMAC-SHA256 signature (`sanity-webhook-signature` header) that the server verifies before sending anything.
+Sanity signs every request with an HMAC-SHA256 signature
+(`sanity-webhook-signature: t=<timestamp>,v1=<hmac>` header) that the server
+verifies before sending anything. The signature check is strict: no header, no
+secret, or a mismatched secret all result in `401 Invalid webhook signature`
+(logged with the exact reason). Draft documents (`_id` starting with
+`drafts.`) are ignored server-side so saving a draft never notifies subscribers.
 
 ### 3. Test it manually
 
-Without Sanity, you can trigger a broadcast with:
+Without Sanity, you can trigger a broadcast with a properly signed request
+(run from the `Backend` folder — it reads `SANITY_WEBHOOK_SECRET` from `.env`):
 
 ```bash
-curl -X POST http://localhost:5000/api/notifications/send \
-  -H "Content-Type: application/json" \
-  -H "x-webhook-secret: <your SANITY_WEBHOOK_SECRET>" \
-  -d '{"_type":"post","title":"My new post","slug":{"current":"my-new-post"}}'
+node -e "
+const crypto = require('crypto');
+const secret = require('dotenv').config().parsed.SANITY_WEBHOOK_SECRET;
+const body = JSON.stringify({ _type: 'post', title: 'My new post', slug: { current: 'my-new-post' } });
+const timestamp = Date.now();
+const signature = crypto.createHmac('sha256', secret).update(timestamp + '.' + body).digest('hex');
+fetch('http://localhost:5000/api/notifications/send', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'sanity-webhook-signature': 't=' + timestamp + ',v1=' + signature },
+  body
+}).then(r => r.json()).then(console.log);
+"
 ```
+
+Expected: `{ success: true, sent: N, failed: 0, removed: 0 }`.
 
 ### Notes
 
