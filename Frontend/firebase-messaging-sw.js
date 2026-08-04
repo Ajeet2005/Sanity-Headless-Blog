@@ -21,7 +21,7 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v3'; // bumped when cached payload changes (vendor SDK files)
+const CACHE_NAME = 'anubhav-v4'; // bumped when cached payload changes (vendor SDK files)
 const urlsToCache = [
   'index.html',
   'journal.html',
@@ -55,9 +55,26 @@ const app = firebase.initializeApp(FIREBASE_CONFIG, FCM_APP_NAME);
 const messaging = firebase.messaging(app);
 
 // Display background notifications received while the tab is closed.
-// Passes through the post title, excerpt, cover image and badge sent by the server.
+//
+// IMPORTANT — single-display rule: FCM automatically displays any message that
+// carries a `notification` payload (the SDK calls showNotification itself, and
+// its own notificationclick handler opens webpush.fcmOptions.link). If this
+// handler ALSO called showNotification() for those messages, every subscriber
+// would see the notification TWICE (one from the SDK, one from us).
+//
+// So: messages WITH a `notification` payload are left to the SDK's built-in
+// display (we just return early), and only DATA-ONLY messages are displayed
+// manually here.
 messaging.onBackgroundMessage((payload) => {
   const notif = (payload && payload.notification) || {};
+
+  if (Object.keys(notif).length > 0) {
+    // Notification payload present → the SDK already displayed it once.
+    // Tapping it is handled by the SDK (opens fcmOptions.link).
+    return;
+  }
+
+  // Data-only message → show it ourselves.
   const title = notif.title || 'New Blog Published';
   const body = notif.body || '';
   const url = (payload.data && payload.data.url) || '/';
@@ -96,10 +113,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-/* Open the correct blog post when a notification is clicked */
+/* Open the correct blog post when a notification is clicked.
+   Notifications auto-displayed by the FCM SDK (notification-payload messages)
+   carry an internal data key instead of our `url` — the SDK's own click
+   handler opens webpush.fcmOptions.link for those. So only handle clicks for
+   notifications WE displayed (data-only messages, which carry data.url); this
+   keeps click handling independent of listener registration order. */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || '/';
+  const target = event.notification.data && event.notification.data.url;
+  if (!target) return;
   event.waitUntil(
     (async () => {
       const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
