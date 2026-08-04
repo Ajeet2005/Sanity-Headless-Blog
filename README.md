@@ -129,7 +129,13 @@ const crypto = require('crypto');
 const secret = require('dotenv').config().parsed.SANITY_WEBHOOK_SECRET;
 const body = JSON.stringify({ _type: 'post', title: 'My new post', slug: { current: 'my-new-post' } });
 const timestamp = Date.now();
-const signature = crypto.createHmac('sha256', secret).update(timestamp + '.' + body).digest('hex');
+// Sanity signs with the digest base64url-encoded (no padding) — not hex.
+const signature = crypto.createHmac('sha256', secret)
+  .update(timestamp + '.' + body)
+  .digest('base64')
+  .replace(/\+/g, '-')
+  .replace(/\//g, '_')
+  .replace(/=+$/, '');
 fetch('http://localhost:5000/api/notifications/send', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'sanity-webhook-signature': 't=' + timestamp + ',v1=' + signature },

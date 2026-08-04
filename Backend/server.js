@@ -688,12 +688,20 @@ function verifySanityWebhook(req) {
     }
 
     const signedPayload = `${timestamp}.${req.rawBody.toString('utf8')}`;
-    const expected = crypto.createHmac('sha256', secret).update(signedPayload).digest('hex');
+    const expectedBuf = crypto.createHmac('sha256', secret).update(signedPayload).digest(); // 32 raw bytes
 
-    const expectedBuf = Buffer.from(expected, 'hex');
-    const receivedBuf = Buffer.from(signature, 'hex');
+    // Sanity encodes the HMAC digest as base64url WITHOUT padding (see
+    // @sanity/webhook: btoa(...).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')).
+    // Decoding it as hex (the common mistake) yields a different length → reject.
+    if (!/^[A-Za-z0-9_-]+={0,2}$/.test(signature)) {
+      return { valid: false, reason: 'signature is not valid base64url' };
+    }
+    const receivedBuf = Buffer.from(signature.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
     if (expectedBuf.length !== receivedBuf.length) {
-      return { valid: false, reason: 'signature length mismatch' };
+      return {
+        valid: false,
+        reason: `signature length mismatch (expected ${expectedBuf.length} bytes, got ${receivedBuf.length})`,
+      };
     }
     if (!crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
       return { valid: false, reason: 'signature mismatch (secret differs from the Sanity webhook secret?)' };
@@ -731,11 +739,12 @@ app.post('/api/notifications/send', async (req, res) => {
   const body = req.body || {};
 
   // Sanity fires webhooks when a draft is saved too (document.create). Drafts have
-  // _id like "drafts.<id>". Only notify for actually-published posts so writing a
-  // draft doesn't spam subscribers, and publishing fires exactly one notification.
+  // _id like "drafts.<id>", and version docs use "versions.<id>". Only notify for
+  // actually-published posts so writing a draft doesn't spam subscribers, and
+  // publishing fires exactly one notification.
   // Checked before the Firebase check so drafts are ignored even if FCM is down.
   const docId = body._id ? String(body._id) : '';
-  if (docId.startsWith('drafts.')) {
+  if (docId.startsWith('drafts.') || docId.startsWith('versions.')) {
     lastWebhookAttempt = { at: new Date().toISOString(), outcome: 'draft-skipped' };
     console.log(`Webhook ignored: draft document ${docId} (no notification sent).`);
     return res.json({ success: true, skipped: 'draft' });
