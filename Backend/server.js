@@ -518,6 +518,11 @@ app.get('/api/reviews/history', async (req, res) => {
 // Includes diagnostics (no secrets): which credential mode the server sees and
 // whether the Admin SDK actually initialized — lets you tell apart "env vars
 // missing" from "env vars malformed" straight from the browser console.
+// Public, non-secret diagnostics about the most recent Sanity webhook attempt.
+// Lets you verify webhook delivery (and its exact outcome) without Render log
+// access — handy because the signature error is the same for every failure mode.
+let lastWebhookAttempt = null;
+
 app.get('/api/notifications/config', (req, res) => {
   const hasServiceAccountJson = Boolean(process.env.FIREBASE_SERVICE_ACCOUNT);
   const hasIndividualCreds = Boolean(
@@ -542,6 +547,8 @@ app.get('/api/notifications/config', (req, res) => {
       : hasIndividualCreds
       ? 'individual_fields'
       : 'missing',
+    // Last Sanity webhook verification result (null if none received yet).
+    webhookLastAttempt: lastWebhookAttempt,
   });
 });
 
@@ -710,6 +717,13 @@ function sanityImageUrl(ref) {
 app.post('/api/notifications/send', async (req, res) => {
   const webhookCheck = verifySanityWebhook(req);
   if (!webhookCheck.valid) {
+    // Record every attempt (no secrets) so /api/notifications/config shows the
+    // last webhook outcome — useful for verifying Sanity → server delivery.
+    lastWebhookAttempt = {
+      at: new Date().toISOString(),
+      outcome: 'rejected',
+      reason: webhookCheck.reason,
+    };
     console.warn(`Webhook rejected: ${webhookCheck.reason}`);
     return res.status(401).json({ error: 'Invalid webhook signature.' });
   }
@@ -722,6 +736,7 @@ app.post('/api/notifications/send', async (req, res) => {
   // Checked before the Firebase check so drafts are ignored even if FCM is down.
   const docId = body._id ? String(body._id) : '';
   if (docId.startsWith('drafts.')) {
+    lastWebhookAttempt = { at: new Date().toISOString(), outcome: 'draft-skipped' };
     console.log(`Webhook ignored: draft document ${docId} (no notification sent).`);
     return res.json({ success: true, skipped: 'draft' });
   }
@@ -789,8 +804,20 @@ app.post('/api/notifications/send', async (req, res) => {
     console.log(
       `Notification broadcast: ${sent} sent, ${failed} failed, ${invalidTokens.length} stale token(s) removed.`
     );
+    lastWebhookAttempt = {
+      at: new Date().toISOString(),
+      outcome: 'broadcast',
+      sent,
+      failed,
+      removed: invalidTokens.length,
+    };
     return res.json({ success: true, sent, failed, removed: invalidTokens.length });
   } catch (error) {
+    lastWebhookAttempt = {
+      at: new Date().toISOString(),
+      outcome: 'error',
+      reason: String(error.message || error),
+    };
     console.error('Error sending notifications:', error);
     return res.status(500).json({ error: 'Server error sending notifications.' });
   }
