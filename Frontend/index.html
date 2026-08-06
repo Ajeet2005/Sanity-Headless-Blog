@@ -1152,7 +1152,15 @@
     p {
       margin-bottom: 1rem;
       color: var(--text);
+      text-align: justify;
     }
+
+    /* ── Boxed content: keep aligned, never justified ── */
+    .cover-page p { text-align: center; }      /* cover keeps its centered design */
+    .feature-card p { text-align: left; }      /* feature card descriptions */
+    .callout p { text-align: left; }           /* callout box text */
+    .visual-container p { text-align: left; }  /* visual/caption boxes */
+    .doc-footer p { text-align: center; }      /* footer keeps its centered design */
 
     .muted { color: var(--text-muted); }
 
@@ -1339,7 +1347,12 @@
 
     li {
       margin-bottom: 0.4rem;
+      text-align: justify;
     }
+
+    /* TOC navigation stays left-aligned (boxed navigation, not content) */
+    .toc-list li,
+    .toc-sub li { text-align: left; }
 
     /* ── File Tree ── */
     .file-tree {
@@ -1543,18 +1556,18 @@
   </table>
 
   <h3 id="what-expect">What You Can Expect to See in Anubhav</h3>
-  <ul>
-    <li>📰 A clean, minimal blog feed with categorized and tagged posts</li>
-    <li>📖 A personal <strong>Journal</strong> section for reflective entries</li>
-    <li>⭐ <strong>Premium</strong> posts gated behind Khalti payments (Nepal's payment gateway)</li>
-    <li>🔒 <strong>Private</strong> posts accessible only to authenticated users</li>
-    <li>🔔 <strong>Push notifications</strong> — get notified the moment a new post drops</li>
-    <li>🌓 <strong>Dark &amp; Light mode</strong> with persistent preference</li>
-    <li>🔍 <strong>Real-time search</strong> across titles, excerpts, tags, and categories</li>
-    <li>💬 <strong>Reviews &amp; Feedback</strong> system per post with version history</li>
-    <li>📱 <strong>Installable as an app</strong> (PWA) — works offline too</li>
-    <li>🔗 <strong>Rich link previews</strong> when shared on social media (dynamic OG tags)</li>
-  </ul>
+  <ol>
+    <li>A clean, minimal blog feed with categorized and tagged posts</li>
+    <li>A personal <strong>Journal</strong> section for reflective entries</li>
+    <li><strong>Premium</strong> posts gated behind Khalti payments (Nepal's payment gateway)</li>
+    <li><strong>Private</strong> posts accessible only to authenticated users</li>
+    <li><strong>Push notifications</strong> — get notified the moment a new post drops</li>
+    <li><strong>Dark &amp; Light mode</strong> with persistent preference</li>
+    <li><strong>Real-time search</strong> across titles, excerpts, tags, and categories</li>
+    <li><strong>Reviews &amp; Feedback</strong> system per post with version history</li>
+    <li><strong>Installable as an app</strong> (PWA) — works offline too</li>
+    <li><strong>Rich link previews</strong> when shared on social media (dynamic OG tags)</li>
+  </ol>
 </section>
 
 
