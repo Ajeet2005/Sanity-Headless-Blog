@@ -88,17 +88,82 @@ app.get('/post.html', async (req, res) => {
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
+    const canonicalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+
     // Dynamically replace empty meta tags in post.html
     html = html
       .replace(/<meta property="og:title" content="[^"]*"\s*\/?>/, `<meta property="og:title" content="${escapeHtml(title)}" />`)
       .replace(/<meta property="og:description" content="[^"]*"\s*\/?>/, `<meta property="og:description" content="${escapeHtml(description)}" />`)
       .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/, `<meta property="og:image" content="${escapeHtml(imageUrl)}" />`)
-      .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${escapeHtml(req.protocol + '://' + req.get('host') + req.originalUrl)}" />`);
+      .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${escapeHtml(canonicalUrl)}" />`)
+      .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${escapeHtml(description)}" />`)
+      .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`)
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`);
 
     return res.send(html);
   } catch (error) {
     console.error('Error serving dynamic meta tags for post:', error);
     return res.sendFile(filePath);
+  }
+});
+
+// ── SEO: dynamically generated sitemap.xml ──
+// robots.txt is a static file at Frontend/robots.txt (served by express.static)
+// and points here. The sitemap is generated from Sanity so every published post
+// (blog, premium, journal) is always included automatically. Private posts are
+// excluded since crawlers cannot access them. Cached for 1 hour to keep Sanity
+// API usage low.
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    const PROJECT_ID = 'xsd8o1za';
+    const DATASET = 'production';
+    const QUERY = encodeURIComponent(`*[_type == "post" && defined(slug.current) && (!defined(isPrivate) || isPrivate != true)]{
+      "slug": slug.current,
+      "lastmod": coalesce(publishedAt, _updatedAt)
+    }`);
+    const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
+
+    const sanityRes = await fetch(sanityUrl);
+    const sanityData = await sanityRes.json();
+
+    if (!sanityRes.ok || sanityData.error) {
+      throw new Error(sanityData.error?.description || `Sanity query failed (${sanityRes.status})`);
+    }
+
+    const posts = sanityData.result || [];
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+
+    // Safely format lastmod to YYYY-MM-DD; skip it entirely for unparseable dates.
+    const toLastmod = (d) => {
+      if (!d) return '';
+      const parsed = new Date(d);
+      return isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
+    };
+
+    const urls = [
+      { loc: `${baseUrl}/`, lastmod: '' },
+      { loc: `${baseUrl}/journal.html`, lastmod: '' },
+      ...posts.map((p) => ({
+        loc: `${baseUrl}/post.html?slug=${encodeURIComponent(p.slug)}`,
+        lastmod: toLastmod(p.lastmod),
+      })),
+    ];
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (u) => `  <url>\n    <loc>${escapeHtml(u.loc)}</loc>${u.lastmod ? `\n    <lastmod>${u.lastmod}</lastmod>` : ''}\n  </url>`
+  )
+  .join('\n')}
+</urlset>`;
+
+    res.type('application/xml');
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.send(xml);
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).type('text/plain').send('Error generating sitemap.');
   }
 });
 
