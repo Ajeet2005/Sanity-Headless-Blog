@@ -142,6 +142,10 @@ const ReviewSchema = new mongoose.Schema({
   rating: { type: Number, required: true, min: 1, max: 5 },
   feedback: { type: String, default: '' },
   slug: { type: String, required: true, index: true },
+  // Optional author/person reply shown inside the review card
+  reply: { type: String, default: '' },
+  repliedBy: { type: String, default: '' },
+  repliedAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -443,6 +447,62 @@ app.get('/api/reviews', async (req, res) => {
   }
 });
 
+// POST /api/reviews/reply — add or update a reply on a review
+// If repliedBy is 'Author' (or omitted), the frontend labels it "Replied by Author".
+app.post('/api/reviews/reply', async (req, res) => {
+  try {
+    const { reviewId, reply, repliedBy } = req.body;
+
+    if (!reviewId) {
+      return res.status(400).json({ error: 'Review ID is required.' });
+    }
+    if (!reply || !String(reply).trim()) {
+      return res.status(400).json({ error: 'Reply text is required.' });
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ error: 'Review not found.' });
+    }
+
+    review.reply = String(reply).trim();
+    review.repliedBy = (repliedBy || '').trim() || 'Author';
+    review.repliedAt = new Date();
+    await review.save();
+
+    return res.json({ success: true, review });
+  } catch (error) {
+    console.error('Error saving review reply:', error);
+    return res.status(500).json({ error: 'Server error saving review reply.' });
+  }
+});
+
+// DELETE /api/reviews/reply — remove the reply from a review (reviewId in body)
+app.delete('/api/reviews/reply', async (req, res) => {
+  try {
+    const { reviewId } = req.body || {};
+
+    if (!reviewId) {
+      return res.status(400).json({ error: 'Review ID is required.' });
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ error: 'Review not found.' });
+    }
+
+    review.reply = '';
+    review.repliedBy = '';
+    review.repliedAt = null;
+    await review.save();
+
+    return res.json({ success: true, review });
+  } catch (error) {
+    console.error('Error deleting review reply:', error);
+    return res.status(500).json({ error: 'Server error deleting review reply.' });
+  }
+});
+
 // PUT /api/reviews — update an existing review (identified by name + slug)
 // Preserves the old version in ReviewHistory before updating
 app.put('/api/reviews', async (req, res) => {
@@ -491,6 +551,36 @@ app.put('/api/reviews', async (req, res) => {
   } catch (error) {
     console.error('Error updating review:', error);
     return res.status(500).json({ error: 'Server error updating review.' });
+  }
+});
+
+// DELETE /api/reviews — delete an existing review (identified by name + slug)
+// Also removes the archived version history for that review.
+app.delete('/api/reviews', async (req, res) => {
+  try {
+    const { name, slug } = req.body || {};
+    const reviewerName = (name || '').trim() || 'Anonymous';
+
+    if (!slug) {
+      return res.status(400).json({ error: 'Post slug is required.' });
+    }
+
+    // Match the most recent review with this name on this post — with anonymous
+    // reviewers (all named "Anonymous"), the freshest one is the safest pick.
+    const existingReview = await Review.findOne({ name: reviewerName, slug }).sort({ createdAt: -1 });
+    if (!existingReview) {
+      return res.status(404).json({ error: 'Review not found. Please submit a new review.' });
+    }
+
+    // Remove related version history before deleting the review
+    await ReviewHistory.deleteMany({ originalReviewId: existingReview._id });
+    await Review.deleteOne({ _id: existingReview._id });
+
+    console.log(`Review deleted for slug: ${slug}, name: ${reviewerName}`);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    return res.status(500).json({ error: 'Server error deleting review.' });
   }
 });
 
