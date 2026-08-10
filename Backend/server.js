@@ -66,6 +66,12 @@ app.get('/post.html', async (req, res) => {
     const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
       title,
       excerpt,
+      publishedAt,
+      _updatedAt,
+      "authorName": author->name,
+      "authorImage": author->image.asset->url,
+      "categories": categories[]->title,
+      tags,
       "imageUrl": mainImage.asset->url,
       "ogImageUrl": ogImage.asset->url
     }`);
@@ -88,7 +94,36 @@ app.get('/post.html', async (req, res) => {
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
-    const canonicalUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+    // Canonical points at the clean, sitemap-matching URL (ignores extra query params).
+    const canonicalUrl = `${baseUrl}/post.html?slug=${encodeURIComponent(slug)}`;
+
+    // BlogPosting structured data (JSON-LD) so Google can show rich results for
+    // each article. '<' is escaped to \u003c to prevent breaking out of the
+    // <script> block.
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: title,
+      description: description,
+      image: [imageUrl],
+      datePublished: post.publishedAt || post._updatedAt || '',
+      dateModified: post._updatedAt || post.publishedAt || '',
+      author: {
+        '@type': 'Person',
+        name: post.authorName || 'Anubhav',
+        image: post.authorImage || undefined,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Anubhav',
+        url: baseUrl,
+        logo: { '@type': 'ImageObject', url: `${baseUrl}/favicon.png` },
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
+      url: canonicalUrl,
+      keywords: [...(post.categories || []), ...(post.tags || [])].filter(Boolean).join(', '),
+    };
+    const jsonLd = JSON.stringify(schema).replace(/</g, '\\u003c');
 
     // Dynamically replace empty meta tags in post.html
     html = html
@@ -97,8 +132,14 @@ app.get('/post.html', async (req, res) => {
       .replace(/<meta property="og:image" content="[^"]*"\s*\/?>/, `<meta property="og:image" content="${escapeHtml(imageUrl)}" />`)
       .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${escapeHtml(canonicalUrl)}" />`)
       .replace(/<meta name="description" content="[^"]*"\s*\/?>/, `<meta name="description" content="${escapeHtml(description)}" />`)
+      .replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/, `<meta name="twitter:title" content="${escapeHtml(title)}" />`)
+      .replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/, `<meta name="twitter:description" content="${escapeHtml(description)}" />`)
+      .replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${escapeHtml(imageUrl)}" />`)
+      .replace(/<meta property="article:published_time" content="[^"]*"\s*\/?>/, `<meta property="article:published_time" content="${escapeHtml(post.publishedAt || post._updatedAt || '')}" />`)
+      .replace(/<meta property="article:modified_time" content="[^"]*"\s*\/?>/, `<meta property="article:modified_time" content="${escapeHtml(post._updatedAt || post.publishedAt || '')}" />`)
       .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`)
-      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`);
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`)
+      .replace(/<script type="application\/ld\+json" id="post-schema">[\s\S]*?<\/script>/, `<script type="application/ld+json" id="post-schema">${jsonLd}</script>`);
 
     return res.send(html);
   } catch (error) {
@@ -131,8 +172,9 @@ app.get('/sitemap.xml', async (req, res) => {
     }
 
     const posts = sanityData.result || [];
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
-
+const baseUrl = (
+  process.env.BASE_URL || `${req.protocol}://${req.get('host')}`
+).replace(/\/+$/, '');
     // Safely format lastmod to YYYY-MM-DD; skip it entirely for unparseable dates.
     const toLastmod = (d) => {
       if (!d) return '';

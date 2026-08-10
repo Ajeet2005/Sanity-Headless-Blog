@@ -18,10 +18,16 @@
   <meta property="og:url" content="" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Anubhav" />
+  <meta property="article:published_time" content="" />
+  <meta property="article:modified_time" content="" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="" />
+  <meta name="twitter:description" content="" />
+  <meta name="twitter:image" content="" />
   <meta name="description" content="" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="" />
+  <script type="application/ld+json" id="post-schema">{"@context": "https://schema.org"}</script>
   <title>Blog Post | Anubhav</title>
   <style>
     * {
@@ -2401,7 +2407,7 @@
       const QUERY =
         encodeURIComponent(`{
         "post": *[_type == "post" && slug.current == "${slug}"][0]{
-          title, publishedAt, _createdAt, excerpt, readingTime, isPrivate, isPremium, postType,
+          title, publishedAt, _createdAt, _updatedAt, excerpt, readingTime, isPrivate, isPremium, postType,
           "authorName": author->name,
           "authorImage": author->image.asset->url,
           "authorBio": author->bio,
@@ -2466,20 +2472,80 @@
             return;
           }
 
-          document.title = post.title;
+          const postTitle = post.title || "Blog Post";
+          const postDescription = post.excerpt || "Read the full post on our blog.";
+          const postImage =
+            post.ogImageUrl ||
+            post.imageUrl ||
+            window.location.origin + "/favicon.png";
+          const canonicalUrl =
+            window.location.origin +
+            window.location.pathname +
+            "?slug=" +
+            encodeURIComponent(slug);
 
-          document
-            .querySelector('meta[property="og:title"]')
-            .setAttribute("content", post.title || "");
-          document
-            .querySelector('meta[property="og:description"]')
-            .setAttribute("content", post.excerpt || "");
-          document
-            .querySelector('meta[property="og:image"]')
-            .setAttribute("content", post.ogImageUrl || post.imageUrl || window.location.origin + "/favicon.png");
-          document
-            .querySelector('meta[property="og:url"]')
-            .setAttribute("content", window.location.href);
+          document.title = postTitle + " | Anubhav";
+
+          // Meta description + Open Graph + Twitter card tags
+          [
+            ['meta[property="og:title"]', postTitle],
+            ['meta[property="og:description"]', postDescription],
+            ['meta[property="og:image"]', postImage],
+            ['meta[property="og:url"]', canonicalUrl],
+            ['meta[name="description"]', postDescription],
+            ['meta[name="twitter:title"]', postTitle],
+            ['meta[name="twitter:description"]', postDescription],
+            ['meta[name="twitter:image"]', postImage],
+            [
+              'meta[property="article:published_time"]',
+              post.publishedAt || post._createdAt || "",
+            ],
+            [
+              'meta[property="article:modified_time"]',
+              post._updatedAt || post.publishedAt || post._createdAt || "",
+            ],
+          ].forEach(([selector, value]) => {
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute("content", value || "");
+          });
+
+          // Canonical URL
+          const canonicalLink = document.querySelector('link[rel="canonical"]');
+          if (canonicalLink) canonicalLink.setAttribute("href", canonicalUrl);
+
+          // BlogPosting structured data for Google rich results
+          const schemaEl = document.getElementById("post-schema");
+          if (schemaEl) {
+            schemaEl.textContent = JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              headline: postTitle,
+              description: postDescription,
+              image: [postImage],
+              datePublished: post.publishedAt || post._createdAt || "",
+              dateModified:
+                post._updatedAt || post.publishedAt || post._createdAt || "",
+              author: {
+                "@type": "Person",
+                name: post.authorName || "Anubhav",
+                image: post.authorImage || undefined,
+              },
+              publisher: {
+                "@type": "Organization",
+                name: "Anubhav",
+                url: window.location.origin,
+                logo: {
+                  "@type": "ImageObject",
+                  url: window.location.origin + "/favicon.png",
+                },
+              },
+              mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+              url: canonicalUrl,
+              keywords: [...(post.categories || []), ...(post.tags || [])]
+                .filter(Boolean)
+                .join(", "),
+            });
+          }
 
           const authorBioText = post.authorBio && Array.isArray(post.authorBio)
             ? post.authorBio.map(block => block.children ? block.children.map(c => c.text).join("") : "").join(" ")
