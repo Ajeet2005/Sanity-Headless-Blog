@@ -31,6 +31,66 @@ npm install
 npm run dev            # starts the Studio on localhost:3333
 ```
 
+## SEO: static post links (build script)
+
+Blog post links used to exist only after client-side JS ran, so crawlers that
+don't execute JS (Googlebot included) saw an empty post grid — posts showed up
+as "Discovered, currently not indexed".
+
+`Backend/build.js` fixes this at build time: it queries Sanity for every
+published post and injects real `<a href="post.html?slug=…">Title</a>` links
+directly into `Frontend/index.html` (between the `SEO_STATIC_POST_LINKS_START`
+/ `SEO_STATIC_POST_LINKS_END` markers inside the `#posts` container). The links
+are part of the raw HTML source before any JavaScript runs. In the browser, the
+existing client-side JS still fetches fresh data and replaces them with the
+full post cards — search, filtering, and categories work exactly as before.
+
+### Run locally
+
+```bash
+cd Backend
+npm install
+npm run build        # fetches posts from Sanity and rewrites ../Frontend/index.html
+```
+
+Verify: open `Frontend/index.html` → **View Page Source** and you should see
+`<a href="post.html?slug=…">` for every post. Re-running is safe (idempotent).
+If Sanity is temporarily unreachable, the script keeps the last good links and
+exits successfully so a deploy is never blocked.
+
+### Render build step
+
+Your Render service's **Root Directory** is `Backend`. Set the **Build Command**
+to:
+
+```
+npm install && npm run build
+```
+
+Every deploy then regenerates `index.html` with the latest post links before
+the site goes live. (Keep `Backend/package-lock.json` committed so installs are
+reproducible.)
+
+### Auto-rebuild when posts are published (Sanity webhook → Render deploy hook)
+
+1. Render dashboard → your web service → **Settings** → **Deploy Hook** → copy
+the URL (looks like `https://api.render.com/deploy/srv-xxx?key=yyy`).
+2. Sanity project → **API** → **Webhooks** → *Create webhook*:
+   - **URL**: paste the Render deploy hook URL
+   - **HTTP method**: `POST`
+   - **Trigger**: `Create` + `Update`
+   - **Filter**: `*[_type == "post"] && !(_id in path("drafts.**"))`
+   - **Secret**: leave empty (Render deploy hooks don't verify signatures)
+
+Now publishing or updating a post fires the webhook, which hits the Render
+deploy hook and rebuilds the site automatically — so new posts get real HTML
+links without any manual redeploy. The filter skips draft saves so editing a
+draft doesn't trigger a build.
+
+> This is a second, separate webhook from the push-notification one described
+> below (`/api/notifications/send`) — they do different jobs and both can
+> coexist.
+
 ## Environment variables (Backend/.env)
 
 | Variable | Purpose |
