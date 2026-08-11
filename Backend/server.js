@@ -209,6 +209,94 @@ ${urls
   }
 });
 
+// ── SEO: dynamically inject post links into the homepage ──
+// The homepage's raw HTML now contains real <a href="post.html?slug=...">
+// links for every published post so crawlers that don't run JS (Googlebot
+// included) can discover articles. Serving happens dynamically from Sanity
+// (cached 1 hour, like the sitemap) — publish a post and its link appears
+// within the cache window, with no rebuilds or webhooks required.
+// build.js still regenerates the committed index.html at build time as a
+// fallback for static hosts / direct file access.
+let homepageLinksCache = null;
+let homepageLinksCacheAt = 0;
+const HOMEPAGE_LINKS_CACHE_MS = 60 * 60 * 1000; // 1 hour
+
+const POST_LINKS_START = '<!-- SEO_STATIC_POST_LINKS_START -->';
+const POST_LINKS_END = '<!-- SEO_STATIC_POST_LINKS_END -->';
+
+// Returns the HTML block to place between the SEO markers, fetched from
+// Sanity and cached. Falls back to the previous (possibly stale) block when
+// the fetch fails so the homepage never breaks on a Sanity hiccup.
+let homepageLinksFetch = null; // in-flight dedup: never fire duplicate Sanity fetches on cache expiry
+
+function getHomepageLinksBlock() {
+  if (homepageLinksCache && Date.now() - homepageLinksCacheAt < HOMEPAGE_LINKS_CACHE_MS) {
+    return homepageLinksCache;
+  }
+  if (!homepageLinksFetch) {
+    homepageLinksFetch = fetchHomepageLinksBlock().finally(() => {
+      homepageLinksFetch = null;
+    });
+  }
+  return homepageLinksFetch;
+}
+
+async function fetchHomepageLinksBlock() {
+  try {
+    const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'xsd8o1za';
+    const DATASET = process.env.SANITY_DATASET || 'production';
+    const QUERY = encodeURIComponent(`*[_type == "post"]{title, slug, publishedAt}`);
+    const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
+
+    const sanityRes = await fetch(sanityUrl);
+    const sanityData = await sanityRes.json();
+    if (!sanityRes.ok || sanityData.error) {
+      throw new Error(sanityData.error?.description || `Sanity query failed (${sanityRes.status})`);
+    }
+
+    const posts = sanityData.result || [];
+    const links = posts
+      .filter((post) => post && post.slug && post.slug.current)
+      .map((post) => {
+        const slug = encodeURIComponent(post.slug.current);
+        const title = escapeHtml(post.title || 'Untitled');
+        return (
+          `<a class="card seo-static-post" href="post.html?slug=${slug}">` +
+          `<div class="card-body"><h3>${title}</h3></div></a>`
+        );
+      });
+
+    const indent = '            '; // matches the markers' indentation in index.html
+    const body = links.length ? links.join(`\n${indent}`) : '';
+    homepageLinksCache = `${POST_LINKS_START}\n${indent}${body}\n${indent}${POST_LINKS_END}`;
+    homepageLinksCacheAt = Date.now();
+    return homepageLinksCache;
+  } catch (err) {
+    if (homepageLinksCache) return homepageLinksCache; // stale-but-better-than-nothing
+    throw err;
+  }
+}
+
+app.get(['/', '/index.html'], async (req, res) => {
+  const filePath = path.join(__dirname, '../Frontend/index.html');
+  try {
+    const block = await getHomepageLinksBlock();
+    const fs = require('fs').promises;
+    let html = await fs.readFile(filePath, 'utf8');
+    const startIdx = html.indexOf(POST_LINKS_START);
+    const endIdx = html.indexOf(POST_LINKS_END);
+    if (startIdx !== -1 && endIdx > startIdx) {
+      html = html.slice(0, startIdx) + block + html.slice(endIdx + POST_LINKS_END.length);
+      res.set('Cache-Control', 'public, max-age=300'); // short client cache; server refreshes hourly
+      return res.send(html);
+    }
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error('Error injecting homepage links:', error);
+    return res.sendFile(filePath);
+  }
+});
+
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../Frontend')));
 

@@ -19,6 +19,11 @@
  * the existing JS still fetches fresh data from Sanity and replaces the
  * static links with the full post cards, exactly as before.
  *
+ * NOTE: Backend/server.js ALSO injects these links dynamically when the
+ * homepage is served (cached 1 hour), so links stay fresh without rebuilds.
+ * This script remains as the build-time fallback that keeps the committed
+ * index.html populated for static hosts and direct file access.
+ *
  * USAGE
  * -----
  *   cd Backend
