@@ -10,7 +10,7 @@
  * pages as "Discovered – currently not indexed".
  *
  * This script runs at build/deploy time (Render Build Command) and injects a
- * real, static `<a href="post.html?slug=...">Title</a>` link for every
+ * real, static `<a href="/slug">Title</a>` link for every
  * published post directly into `Frontend/index.html`, between the
  * `SEO_STATIC_POST_LINKS_START` / `SEO_STATIC_POST_LINKS_END` marker comments.
  * The links are then part of the raw HTML source — no JS required.
@@ -88,7 +88,7 @@ function buildLinksBlock(posts) {
       const slug = encodeURIComponent(post.slug.current);
       const title = escapeHtml(post.title || 'Untitled');
       return (
-        `<a class="card seo-static-post" href="post.html?slug=${slug}">` +
+        `<a class="card seo-static-post" href="${slug}">` +
         `<div class="card-body"><h3>${title}</h3></div></a>`
       );
     });

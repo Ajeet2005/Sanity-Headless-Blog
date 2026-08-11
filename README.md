@@ -37,7 +37,7 @@ Blog post links used to exist only after client-side JS ran, so crawlers that
 don't execute JS (Googlebot included) saw an empty post grid — posts showed up
 as "Discovered, currently not indexed".
 
-Two layers now put real `<a href="post.html?slug=…">Title</a>` links into the
+Two layers now put real `<a href="/slug">Title</a>` links into the
 homepage's raw HTML before any JavaScript runs:
 
 1. **Dynamic (primary)** — `Backend/server.js` injects the links whenever `/`
@@ -197,7 +197,7 @@ Expected: `{ success: true, sent: N, failed: 0, removed: 0 }`.
 
 - **HTTPS or localhost is required** — browsers only allow notifications (and service workers) on secure origins.
 - **Every** published post triggers a notification (blog, premium, journal, private — all categories).
-- Clicking a notification opens `post.html?slug=…` for that post.
+- Clicking a notification opens `/slug` for that post.
 
 ### Troubleshooting
 

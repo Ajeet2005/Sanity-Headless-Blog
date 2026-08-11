@@ -2400,7 +2400,19 @@
     }
 
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get("slug");
+    // Clean URLs (/8-month-design-journey) carry the slug in the path; the
+    // legacy ?slug= form is still supported (the server 301-redirects to the
+    // clean URL, and this fallback covers static hosting).
+    const pathSlug = (() => {
+      const first = window.location.pathname.replace(/^\/+/, "").split("/")[0] || "";
+      if (!first || first.includes(".")) return "";
+      try {
+        return decodeURIComponent(first);
+      } catch (err) {
+        return ""; // malformed percent-encoding in the URL — treat as no slug
+      }
+    })();
+    const slug = params.get("slug") || pathSlug;
 
     if (!slug) {
       document.getElementById("status").textContent = "Post not found.";
@@ -2736,7 +2748,7 @@
               const isMorePremium = morePost.postType === "premium" || Boolean(morePost.isPremium);
               const isMorePrivate = Boolean(morePost.isPrivate);
               return `
-                      <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="post.html?slug=${morePost.slug}" data-private="${isMorePrivate}">
+                      <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="/${morePost.slug}" data-private="${isMorePrivate}">
                         ${isMorePremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                         ${isMorePrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                         ${morePost.imageUrl ? `<img src="${morePost.imageUrl}" alt="${morePost.title}" />` : ""}

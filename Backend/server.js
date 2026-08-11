@@ -51,51 +51,46 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// Intercept crawler requests for post.html to dynamically inject meta tags
-app.get('/post.html', async (req, res) => {
-  const { slug } = req.query;
+// ── SEO: post pages — clean URLs ──
+// Posts are served at clean URLs like /8-month-design-journey (no ?slug=
+// query parameter). The legacy /post.html?slug=… form permanently redirects
+// (301) to the clean URL so already-indexed links keep working and link
+// equity consolidates on one canonical URL.
+
+// Shared renderer: fetches the post from Sanity and injects the SEO meta tags
+// into the static post.html shell. Returns false when the post doesn't exist.
+async function servePostPage(slug, baseUrl, res) {
   const filePath = path.join(__dirname, '../Frontend/post.html');
+  const safeSlug = String(slug || '').replace(/["'\\]/g, '');
+  const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${safeSlug}"][0]{
+    title,
+    excerpt,
+    publishedAt,
+    _updatedAt,
+    "authorName": author->name,
+    "authorImage": author->image.asset->url,
+    "categories": categories[]->title,
+    tags,
+    "imageUrl": mainImage.asset->url,
+    "ogImageUrl": ogImage.asset->url
+  }`);
+  const sanityUrl = `https://xsd8o1za.api.sanity.io/v2024-01-01/data/query/production?query=${QUERY}`;
 
-  if (!slug) {
-    return res.sendFile(filePath);
-  }
+  const sanityRes = await fetch(sanityUrl);
+  const sanityData = await sanityRes.json();
+  const post = sanityData.result;
 
-  try {
-    const PROJECT_ID = "xsd8o1za";
-    const DATASET = "production";
-    const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${slug}"][0]{
-      title,
-      excerpt,
-      publishedAt,
-      _updatedAt,
-      "authorName": author->name,
-      "authorImage": author->image.asset->url,
-      "categories": categories[]->title,
-      tags,
-      "imageUrl": mainImage.asset->url,
-      "ogImageUrl": ogImage.asset->url
-    }`);
-    const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
-
-    const sanityRes = await fetch(sanityUrl);
-    const sanityData = await sanityRes.json();
-    const post = sanityData.result;
-
-    if (!post) {
-      return res.sendFile(filePath);
-    }
-//
+  if (!post) return false;
     // Read the static post.html template
     const fs = require('fs').promises;
     let html = await fs.readFile(filePath, 'utf8');
 
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
     const imageUrl = post.ogImageUrl || post.imageUrl || `${baseUrl}/favicon.png`;
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
-    // Canonical points at the clean, sitemap-matching URL (ignores extra query params).
-    const canonicalUrl = `${baseUrl}/post.html?slug=${encodeURIComponent(slug)}`;
+    // Canonical points at the clean URL (ignores extra query params).
+    const canonicalUrl = `${baseUrl}/${encodeURIComponent(slug)}`;
 
     // BlogPosting structured data (JSON-LD) so Google can show rich results for
     // each article. '<' is escaped to \u003c to prevent breaking out of the
@@ -141,10 +136,41 @@ app.get('/post.html', async (req, res) => {
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`)
       .replace(/<script type="application\/ld\+json" id="post-schema">[\s\S]*?<\/script>/, `<script type="application/ld+json" id="post-schema">${jsonLd}</script>`);
 
-    return res.send(html);
+  return res.send(html);
+}
+
+// Legacy query-param form → permanent redirect to the clean URL.
+app.get('/post.html', (req, res) => {
+  const filePath = path.join(__dirname, '../Frontend/post.html');
+  const { slug } = req.query;
+  if (!slug || typeof slug !== 'string') return res.sendFile(filePath);
+  return res.redirect(301, `/${encodeURIComponent(slug)}`);
+});
+
+// Clean post URLs: /8-month-design-journey
+app.get('/:slug', async (req, res, next) => {
+  const rawSlug = String(req.params.slug || '');
+  const slug = rawSlug.toLowerCase();
+  // Never swallow static files (robots.txt, favicon.png, *.html, sw.js, …)
+  // or the API — those fall through to their own handlers / express.static.
+  // (Sanity slugs never contain dots, so the extension check is safe.)
+  if (!slug || path.extname(slug) || slug === 'api' || slug.indexOf('api/') === 0) {
+    return next();
+  }
+  const baseUrl = (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  try {
+    // Try the exact slug first; fall back to lowercase so mixed-case URL
+    // variants (crawlers, typed URLs) still resolve.
+    let served = await servePostPage(rawSlug, baseUrl, res);
+    if (served === false && rawSlug !== slug) {
+      served = await servePostPage(slug, baseUrl, res);
+    }
+    if (served === false) {
+      return res.status(404).type('text/plain').send('Post not found.');
+    }
   } catch (error) {
-    console.error('Error serving dynamic meta tags for post:', error);
-    return res.sendFile(filePath);
+    console.error('Error serving post page:', error);
+    return res.status(500).type('text/plain').send('Error loading post.');
   }
 });
 
@@ -186,7 +212,7 @@ const baseUrl = (
       { loc: `${baseUrl}/`, lastmod: '' },
       { loc: `${baseUrl}/journal.html`, lastmod: '' },
       ...posts.map((p) => ({
-        loc: `${baseUrl}/post.html?slug=${encodeURIComponent(p.slug)}`,
+        loc: `${baseUrl}/${encodeURIComponent(p.slug)}`,
         lastmod: toLastmod(p.lastmod),
       })),
     ];
@@ -261,7 +287,7 @@ async function fetchHomepageLinksBlock() {
         const slug = encodeURIComponent(post.slug.current);
         const title = escapeHtml(post.title || 'Untitled');
         return (
-          `<a class="card seo-static-post" href="post.html?slug=${slug}">` +
+          `<a class="card seo-static-post" href="${slug}">` +
           `<div class="card-body"><h3>${title}</h3></div></a>`
         );
       });
@@ -1044,7 +1070,7 @@ app.post('/api/notifications/send', async (req, res) => {
     const title = body.title || 'New Blog Published';
     const slug = (body.slug && body.slug.current) || body.slug || '';
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    const postUrl = slug ? `${baseUrl}/post.html?slug=${encodeURIComponent(slug)}` : `${baseUrl}/`;
+    const postUrl = slug ? `${baseUrl}/${encodeURIComponent(slug)}` : `${baseUrl}/`;
 
     // Rich notification: post title, excerpt as the body, and the cover image.
     const ogRef = body.ogImage && body.ogImage.asset && body.ogImage.asset._ref;
