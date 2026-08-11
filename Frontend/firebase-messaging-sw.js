@@ -21,7 +21,7 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v4'; // bumped when cached payload changes (vendor SDK files)
+const CACHE_NAME = 'anubhav-v5'; // bump this on every deploy so browsers refresh cached pages
 const urlsToCache = [
   'index.html',
   'journal.html',
@@ -147,7 +147,8 @@ self.addEventListener('fetch', (event) => {
         if (
           response.status === 200 &&
           event.request.method === 'GET' &&
-          !event.request.url.includes('/api/')
+          !event.request.url.includes('/api/') &&
+          !event.request.url.includes('api.sanity.io')
         ) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
