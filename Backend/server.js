@@ -5,6 +5,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const dns = require('dns');
 const crypto = require('crypto');
+const zlib = require('zlib');
 let adminApp = null;
 let adminAuth = null;
 let adminMessaging = null;
@@ -41,6 +42,49 @@ app.use(
 );
 app.use(express.urlencoded({ extended: true }));
 
+// ── Gzip text responses (HTML/JSON/XML) to cut transfer size ~70% ──
+// Homepage is ~96KB raw but ~23KB gzipped; post pages similar. Uses Node's
+// built-in zlib so there are no extra dependencies.
+app.use((req, res, next) => {
+  const accept = req.headers['accept-encoding'] || '';
+  if (!accept.includes('gzip')) return next();
+  const originalSend = res.send.bind(res);
+  res.send = (body) => {
+    // String bodies are always text (HTML/JSON/XML) — Express only sends
+    // Buffers for binary files. Content-Type may not be set yet at this
+    // point, so don't gate on it. Skip tiny bodies where gzip costs more
+    // than it saves.
+    if (
+      typeof body === 'string' &&
+      body.length > 256 &&
+      !res.get('Content-Encoding')
+    ) {
+      // Express sets Content-Type when res.send receives a string, but we're
+      // handing it a Buffer below — so capture the type first or Express would
+      // label the response application/octet-stream (breaks browsers/SEO).
+      if (!res.get('Content-Type')) res.type('html');
+      const gz = zlib.gzipSync(Buffer.from(body));
+      res.set('Content-Encoding', 'gzip');
+      res.set('Vary', 'Accept-Encoding');
+      res.set('Content-Length', gz.length);
+      return originalSend(gz);
+    }
+    return originalSend(body);
+  };
+  next();
+});
+
+// Sanity image CDN optimization: append resize/format/quality params so the
+// CDN returns a compressed WebP at a sensible width instead of the full-size
+// original (e.g. 1280px+ JPEGs). Huge page-load win — images were loading
+// unoptimized at original resolution.
+function sanityImg(url, w = 1200, q = 75) {
+  if (!url || typeof url !== 'string') return '';
+  if (!url.includes('cdn.sanity.io')) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}auto=format&fit=max&w=${w}&q=${q}`;
+}
+
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   return str
@@ -59,7 +103,17 @@ function escapeHtml(str) {
 
 // Shared renderer: fetches the post from Sanity and injects the SEO meta tags
 // into the static post.html shell. Returns false when the post doesn't exist.
+// Rendered pages are cached briefly (5 min) so repeat visits — including
+// Googlebot crawling every post — don't hit Sanity on every request.
+const postPageCache = new Map();
+const POST_PAGE_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+
 async function servePostPage(slug, baseUrl, res) {
+  const cacheKey = `${baseUrl}|${String(slug).toLowerCase()}`;
+  const cached = postPageCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < POST_PAGE_CACHE_MS) {
+    return res.send(cached.html);
+  }
   const filePath = path.join(__dirname, '../Frontend/post.html');
   const safeSlug = String(slug || '').replace(/["'\\]/g, '');
   const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${safeSlug}"][0]{
@@ -85,7 +139,7 @@ async function servePostPage(slug, baseUrl, res) {
     const fs = require('fs').promises;
     let html = await fs.readFile(filePath, 'utf8');
 
-    const imageUrl = post.ogImageUrl || post.imageUrl || `${baseUrl}/favicon.png`;
+    const imageUrl = sanityImg(post.ogImageUrl || post.imageUrl || `${baseUrl}/favicon.png`);
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
@@ -136,6 +190,8 @@ async function servePostPage(slug, baseUrl, res) {
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`)
       .replace(/<script type="application\/ld\+json" id="post-schema">[\s\S]*?<\/script>/, `<script type="application/ld+json" id="post-schema">${jsonLd}</script>`);
 
+  if (postPageCache.size > 100) postPageCache.clear(); // bound memory on a long-running server
+  postPageCache.set(cacheKey, { at: Date.now(), html });
   return res.send(html);
 }
 

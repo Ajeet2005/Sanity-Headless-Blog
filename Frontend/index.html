@@ -2172,6 +2172,25 @@ export default defineConfig({
 
     <script type="module">
       const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
+
+      // Sanity CDN image optimization: return a resized WebP instead of the
+      // full-size original. Cut page weight dramatically on card grids.
+      function imgUrl(url, w = 600, q = 70) {
+        if (!url) return "";
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes("cdn.sanity.io")) {
+            u.searchParams.set("auto", "format");
+            u.searchParams.set("fit", "max");
+            u.searchParams.set("w", String(w));
+            u.searchParams.set("q", String(q));
+            return u.toString();
+          }
+          return url;
+        } catch (e) {
+          return url;
+        }
+      }
       const modal = document.getElementById("auth-modal");
       const appShell = document.getElementById("app-shell");
       const statusEl = document.getElementById("auth-status");
@@ -2409,7 +2428,7 @@ export default defineConfig({
               <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="/${post.slug?.current}" data-private="${isPrivate}">
                 ${isPremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                 ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
-                ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" />` : ""}
+                ${post.imageUrl ? `<img src="${imgUrl(post.imageUrl, 600)}" alt="${post.title}" loading="lazy" decoding="async" />` : ""}
                 <div class="card-body">
                   ${
                     post.categories?.length

@@ -2069,6 +2069,25 @@
 
   <script type="module">
     const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
+
+    // Sanity CDN image optimization: return a resized WebP instead of the
+    // full-size original. Body images at 1200px, cards at 600px, avatars tiny.
+    function imgUrl(url, w = 1200, q = 75) {
+      if (!url) return "";
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes("cdn.sanity.io")) {
+          u.searchParams.set("auto", "format");
+          u.searchParams.set("fit", "max");
+          u.searchParams.set("w", String(w));
+          u.searchParams.set("q", String(q));
+          return u.toString();
+        }
+        return url;
+      } catch (e) {
+        return url;
+      }
+    }
     const appShell = document.getElementById("app-shell");
     const modal = document.getElementById("auth-modal");
     const emailInput = document.getElementById("auth-email");
@@ -2334,10 +2353,10 @@
             </div>
           `;
         } else if (block._type === 'image') {
-          const imageUrl = block.asset?.url;
+          const imageUrl = imgUrl(block.asset?.url, 1200);
           const caption = block.caption;
           if (imageUrl) {
-            const imgHtml = `<img class="body-image" src="${imageUrl}" alt="${escapeHtml(caption || '')}" />`;
+            const imgHtml = `<img class="body-image" src="${imageUrl}" alt="${escapeHtml(caption || '')}" loading="lazy" decoding="async" />`;
             const captionHtml = caption ? `<div class="image-caption">${escapeHtml(caption)}</div>` : '';
             return `
               <div class="body-image-container">
@@ -2605,7 +2624,7 @@
 
           content.innerHTML = `
             ${post.isPrivate ? '<div class="private-badge">🔒 Private post</div>' : ""}
-            ${post.imageUrl ? `<img class="cover" src="${post.imageUrl}" alt="${post.title}" />` : ""}
+            ${post.imageUrl ? `<img class="cover" src="${imgUrl(post.imageUrl, 1200)}" alt="${post.title}" fetchpriority="high" decoding="async" />` : ""}
             ${post.categories?.length
               ? `
               <div class="post-cats">
@@ -2618,7 +2637,7 @@
             <div class="meta">
               <div class="author-meta-top">
                 <div class="author-avatar">
-                  ${post.authorImage ? `<img src="${post.authorImage}" alt="${post.authorName}" />` : initials(post.authorName)}
+                  ${post.authorImage ? `<img src="${imgUrl(post.authorImage, 96)}" alt="${post.authorName}" />` : initials(post.authorName)}
                 </div>
                 <div class="author-details">
                   <span class="author-name">${post.authorName || "Unknown"}</span>
@@ -2683,7 +2702,7 @@
               <h3>About the Author</h3>
               <div class="author-details-container">
                 <div class="author-avatar-large">
-                  ${post.authorImage ? `<img src="${post.authorImage}" alt="${post.authorName}" />` : initials(post.authorName)}
+                  ${post.authorImage ? `<img src="${imgUrl(post.authorImage, 96)}" alt="${post.authorName}" />` : initials(post.authorName)}
                 </div>
                 <div class="author-info">
                   <span class="author-name">${post.authorName || "Unknown"}</span>
@@ -2751,7 +2770,7 @@
                       <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="/${morePost.slug}" data-private="${isMorePrivate}">
                         ${isMorePremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                         ${isMorePrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
-                        ${morePost.imageUrl ? `<img src="${morePost.imageUrl}" alt="${morePost.title}" />` : ""}
+                        ${morePost.imageUrl ? `<img src="${imgUrl(morePost.imageUrl, 600)}" alt="${morePost.title}" loading="lazy" decoding="async" />` : ""}
                         <div class="card-body">
                           ${morePost.categories?.length
                   ? `
@@ -2765,7 +2784,7 @@
                           <div class="card-footer">
                             <div class="author">
                               <div class="author-avatar">
-                                ${morePost.authorImage ? `<img src="${morePost.authorImage}" alt="${morePost.authorName}" />` : initials(morePost.authorName)}
+                                ${morePost.authorImage ? `<img src="${imgUrl(morePost.authorImage, 96)}" alt="${morePost.authorName}" />` : initials(morePost.authorName)}
                               </div>
                               <span class="author-name">${morePost.authorName || "Unknown"}</span>
                             </div>
