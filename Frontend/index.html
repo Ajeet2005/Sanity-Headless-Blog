@@ -2191,6 +2191,7 @@ export default defineConfig({
           return url;
         }
       }
+      window.imgUrl = imgUrl;
       const modal = document.getElementById("auth-modal");
       const appShell = document.getElementById("app-shell");
       const statusEl = document.getElementById("auth-status");
@@ -2595,8 +2596,10 @@ export default defineConfig({
           renderPosts(allPosts);
         })
         .catch(() => {
-          document.getElementById("status").textContent =
-            "Failed to load posts.";
+          const container = document.getElementById("posts");
+          if (container) {
+            container.innerHTML = '<p id="status">Failed to load posts.</p>';
+          }
         });
     </script>
 

@@ -1968,7 +1968,7 @@
     </header>
 
     <main id="content">
-      <!-- <p id="status">Loading post...</p> -->
+      <p id="status">Loading post...</p>
     </main>
   </div>
 
@@ -2088,6 +2088,7 @@
         return url;
       }
     }
+    window.imgUrl = imgUrl;
     const appShell = document.getElementById("app-shell");
     const modal = document.getElementById("auth-modal");
     const emailInput = document.getElementById("auth-email");
