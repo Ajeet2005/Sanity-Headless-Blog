@@ -1240,7 +1240,7 @@
           .map((post) => {
             const isPrivate = Boolean(post.isPrivate);
             return `
-              <a class="card${isPrivate ? " private" : ""}" href="/${post.slug?.current}" data-private="${isPrivate}">
+              <a class="card${isPrivate ? " private" : ""}" href="/journal/${post.slug?.current}" data-private="${isPrivate}">
                 ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                 ${post.imageUrl ? `<img src="${imgUrl(post.imageUrl, 600)}" alt="${post.title}" loading="lazy" decoding="async" />` : ""}
                 <div class="card-body">

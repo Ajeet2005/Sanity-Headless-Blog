@@ -108,8 +108,8 @@ function escapeHtml(str) {
 const postPageCache = new Map();
 const POST_PAGE_CACHE_MS = 5 * 60 * 1000; // 5 minutes
 
-async function servePostPage(slug, baseUrl, res) {
-  const cacheKey = `${baseUrl}|${String(slug).toLowerCase()}`;
+async function servePostPage(slug, baseUrl, res, expectedPrefix) {
+  const cacheKey = `${baseUrl}|${expectedPrefix || ''}|${String(slug).toLowerCase()}`;
   const cached = postPageCache.get(cacheKey);
   if (cached && Date.now() - cached.at < POST_PAGE_CACHE_MS) {
     return res.send(cached.html);
@@ -121,6 +121,7 @@ async function servePostPage(slug, baseUrl, res) {
     excerpt,
     publishedAt,
     _updatedAt,
+    postType,
     "authorName": author->name,
     "authorImage": author->image.asset->url,
     "categories": categories[]->title,
@@ -135,6 +136,15 @@ async function servePostPage(slug, baseUrl, res) {
   const post = sanityData.result;
 
   if (!post) return false;
+
+    // Every post lives under its type prefix: /blog/<slug> or /journal/<slug>.
+    const actualPrefix = post.postType === 'journal' ? 'journal' : 'blog';
+    // Reached via the wrong prefix? Consolidate on the canonical URL.
+    if (expectedPrefix && expectedPrefix !== actualPrefix) {
+      res.redirect(301, `/${actualPrefix}/${encodeURIComponent(slug)}`);
+      return true;
+    }
+
     // Read the static post.html template
     const fs = require('fs').promises;
     let html = await fs.readFile(filePath, 'utf8');
@@ -143,8 +153,8 @@ async function servePostPage(slug, baseUrl, res) {
     const title = post.title || 'Blog Post';
     const description = post.excerpt || 'Read the full post on our blog.';
 
-    // Canonical points at the clean URL (ignores extra query params).
-    const canonicalUrl = `${baseUrl}/${encodeURIComponent(slug)}`;
+    // Canonical points at the clean, prefixed URL (ignores extra query params).
+    const canonicalUrl = `${baseUrl}/${actualPrefix}/${encodeURIComponent(slug)}`;
 
     // BlogPosting structured data (JSON-LD) so Google can show rich results for
     // each article. '<' is escaped to \u003c to prevent breaking out of the
@@ -195,15 +205,73 @@ async function servePostPage(slug, baseUrl, res) {
   return res.send(html);
 }
 
-// Legacy query-param form → permanent redirect to the clean URL.
-app.get('/post.html', (req, res) => {
+// Fetches just enough of a post to resolve its URL prefix (blog vs journal),
+// used by the legacy-URL redirects. Cached briefly like the post pages.
+const slugMetaCache = new Map();
+const SLUG_META_CACHE_MS = 5 * 60 * 1000; // 5 minutes
+
+async function fetchPostMeta(slug) {
+  const key = String(slug).toLowerCase();
+  const cached = slugMetaCache.get(key);
+  if (cached && Date.now() - cached.at < SLUG_META_CACHE_MS) return cached.post;
+  const safeSlug = String(slug || '').replace(/["'\\]/g, '');
+  const QUERY = encodeURIComponent(`*[_type == "post" && slug.current == "${safeSlug}"][0]{ postType }`);
+  const sanityUrl = `https://xsd8o1za.api.sanity.io/v2024-01-01/data/query/production?query=${QUERY}`;
+  const sanityRes = await fetch(sanityUrl);
+  const sanityData = await sanityRes.json();
+  const post = sanityData.result || null;
+  if (slugMetaCache.size > 200) slugMetaCache.clear();
+  slugMetaCache.set(key, { at: Date.now(), post });
+  return post;
+}
+
+// Post URL prefix from Sanity postType: "journal" posts → /journal/, all
+// others (blog, premium, unset) → /blog/.
+function postPrefix(post) {
+  return post && post.postType === 'journal' ? 'journal' : 'blog';
+}
+
+// Legacy query-param form → permanent redirect to the prefixed clean URL.
+app.get('/post.html', async (req, res) => {
   const filePath = path.join(__dirname, '../Frontend/post.html');
   const { slug } = req.query;
   if (!slug || typeof slug !== 'string') return res.sendFile(filePath);
-  return res.redirect(301, `/${encodeURIComponent(slug)}`);
+  try {
+    const post = await fetchPostMeta(slug);
+    return res.redirect(301, `/${postPrefix(post)}/${encodeURIComponent(slug)}`);
+  } catch (error) {
+    // Sanity hiccup — don't break the redirect, default to /blog/.
+    return res.redirect(301, `/blog/${encodeURIComponent(slug)}`);
+  }
 });
 
-// Clean post URLs: /8-month-design-journey
+// Clean, prefixed post URLs: /blog/8-month-design-journey, /journal/…
+app.get(['/blog/:slug', '/journal/:slug'], async (req, res, next) => {
+  const rawSlug = String(req.params.slug || '');
+  const slug = rawSlug.toLowerCase();
+  // (Sanity slugs never contain dots, so the extension check is safe.)
+  if (!slug || path.extname(slug)) return next();
+  const prefix = req.path.startsWith('/journal/') ? 'journal' : 'blog';
+  const baseUrl = (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
+  try {
+    // Try the exact slug first; fall back to lowercase so mixed-case URL
+    // variants (crawlers, typed URLs) still resolve.
+    let served = await servePostPage(rawSlug, baseUrl, res, prefix);
+    if (served === false && rawSlug !== slug) {
+      served = await servePostPage(slug, baseUrl, res, prefix);
+    }
+    if (served === false) {
+      return res.status(404).type('text/plain').send('Post not found.');
+    }
+  } catch (error) {
+    console.error('Error serving post page:', error);
+    return res.status(500).type('text/plain').send('Error loading post.');
+  }
+});
+
+// Legacy clean URLs (/8-month-design-journey) permanently redirect to the
+// prefixed form so already-indexed links keep working and link equity
+// consolidates on one canonical URL per post.
 app.get('/:slug', async (req, res, next) => {
   const rawSlug = String(req.params.slug || '');
   const slug = rawSlug.toLowerCase();
@@ -213,19 +281,20 @@ app.get('/:slug', async (req, res, next) => {
   if (!slug || path.extname(slug) || slug === 'api' || slug.indexOf('api/') === 0) {
     return next();
   }
+  // Friendly section roots: /blog → homepage, /journal → journal page.
+  if (slug === 'blog') return res.redirect(301, '/');
+  if (slug === 'journal') return res.redirect(301, '/journal.html');
+
   const baseUrl = (process.env.BASE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/+$/, '');
   try {
-    // Try the exact slug first; fall back to lowercase so mixed-case URL
-    // variants (crawlers, typed URLs) still resolve.
-    let served = await servePostPage(rawSlug, baseUrl, res);
-    if (served === false && rawSlug !== slug) {
-      served = await servePostPage(slug, baseUrl, res);
-    }
-    if (served === false) {
+    let post = await fetchPostMeta(rawSlug);
+    if (!post && rawSlug !== slug) post = await fetchPostMeta(slug);
+    if (!post) {
       return res.status(404).type('text/plain').send('Post not found.');
     }
+    return res.redirect(301, `/${postPrefix(post)}/${encodeURIComponent(slug)}`);
   } catch (error) {
-    console.error('Error serving post page:', error);
+    console.error('Error redirecting post page:', error);
     return res.status(500).type('text/plain').send('Error loading post.');
   }
 });
@@ -242,6 +311,7 @@ app.get('/sitemap.xml', async (req, res) => {
     const DATASET = 'production';
     const QUERY = encodeURIComponent(`*[_type == "post" && defined(slug.current) && (!defined(isPrivate) || isPrivate != true)]{
       "slug": slug.current,
+      postType,
       "lastmod": coalesce(publishedAt, _updatedAt)
     }`);
     const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
@@ -268,7 +338,7 @@ const baseUrl = (
       { loc: `${baseUrl}/`, lastmod: '' },
       { loc: `${baseUrl}/journal.html`, lastmod: '' },
       ...posts.map((p) => ({
-        loc: `${baseUrl}/${encodeURIComponent(p.slug)}`,
+        loc: `${baseUrl}/${postPrefix(p)}/${encodeURIComponent(p.slug)}`,
         lastmod: toLastmod(p.lastmod),
       })),
     ];
@@ -327,7 +397,7 @@ async function fetchHomepageLinksBlock() {
   try {
     const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'xsd8o1za';
     const DATASET = process.env.SANITY_DATASET || 'production';
-    const QUERY = encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt}`);
+    const QUERY = encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt, postType}`);
     const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
 
     const sanityRes = await fetch(sanityUrl);
@@ -343,7 +413,7 @@ async function fetchHomepageLinksBlock() {
         const slug = encodeURIComponent(post.slug.current);
         const title = escapeHtml(post.title || 'Untitled');
         return (
-          `<a class="card seo-static-post" href="${slug}">` +
+          `<a class="card seo-static-post" href="/${postPrefix(post)}/${slug}">` +
           `<div class="card-body"><h3>${title}</h3></div></a>`
         );
       });
@@ -1126,7 +1196,7 @@ app.post('/api/notifications/send', async (req, res) => {
     const title = body.title || 'New Blog Published';
     const slug = (body.slug && body.slug.current) || body.slug || '';
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    const postUrl = slug ? `${baseUrl}/${encodeURIComponent(slug)}` : `${baseUrl}/`;
+    const postUrl = slug ? `${baseUrl}/${postPrefix(body)}/${encodeURIComponent(slug)}` : `${baseUrl}/`;
 
     // Rich notification: post title, excerpt as the body, and the cover image.
     const ogRef = body.ogImage && body.ogImage.asset && body.ogImage.asset._ref;

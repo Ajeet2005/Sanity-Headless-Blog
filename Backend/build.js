@@ -53,7 +53,7 @@ const API_VERSION = '2024-01-01';
 // filter used by the frontend's blog query so journal/private posts never
 // appear on the homepage's static shell. We only need the fields required to
 // build a link.
-const GROQ = `*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt}`;
+const GROQ = `*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt, postType}`;
 
 const client = createClient({
   projectId: PROJECT_ID,
@@ -90,8 +90,10 @@ function buildLinksBlock(posts) {
     .map((post) => {
       const slug = encodeURIComponent(post.slug.current);
       const title = escapeHtml(post.title || 'Untitled');
+      // Posts live under a type prefix: /blog/<slug> or /journal/<slug>.
+      const prefix = post.postType === 'journal' ? 'journal' : 'blog';
       return (
-        `<a class="card seo-static-post" href="${slug}">` +
+        `<a class="card seo-static-post" href="/${prefix}/${slug}">` +
         `<div class="card-body"><h3>${title}</h3></div></a>`
       );
     });

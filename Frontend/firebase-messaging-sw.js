@@ -169,8 +169,8 @@ self.addEventListener('fetch', (event) => {
             const url = new URL(event.request.url);
             const path = url.pathname;
             let shell = 'post.html';
-            if (path === '/' || path === '/index.html') shell = 'index.html';
-            else if (path === '/journal.html') shell = 'journal.html';
+            if (path === '/' || path === '/index.html' || path === '/blog') shell = 'index.html';
+            else if (path === '/journal.html' || path === '/journal') shell = 'journal.html';
             else if (path === '/login.html') shell = 'login.html';
             return caches.match(shell).then((shellResponse) => {
               return shellResponse || new Response('Offline', { status: 503 });

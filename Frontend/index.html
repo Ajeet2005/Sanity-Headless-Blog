@@ -994,9 +994,9 @@
           </div>
           <div class="grid" id="posts">
             <!-- SEO_STATIC_POST_LINKS_START -->
-            <a class="card seo-static-post" href="discovering-hidden-charm-of-mountain-travel"><div class="card-body"><h3>Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List</h3></div></a>
-            <a class="card seo-static-post" href="8-month-design-journey"><div class="card-body"><h3>5 Lessons From My 8-Month Design Journey</h3></div></a>
-            <a class="card seo-static-post" href="understanding-sanity-importance-maintain"><div class="card-body"><h3>Understanding Sanity: Meaning, Importance &amp; How to Maintain It</h3></div></a>
+            <a class="card seo-static-post" href="/blog/discovering-hidden-charm-of-mountain-travel"><div class="card-body"><h3>Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List</h3></div></a>
+            <a class="card seo-static-post" href="/blog/8-month-design-journey"><div class="card-body"><h3>5 Lessons From My 8-Month Design Journey</h3></div></a>
+            <a class="card seo-static-post" href="/blog/understanding-sanity-importance-maintain"><div class="card-body"><h3>Understanding Sanity: Meaning, Importance &amp; How to Maintain It</h3></div></a>
             <!-- SEO_STATIC_POST_LINKS_END -->
           </div>
         </div>
@@ -2503,7 +2503,7 @@ export default defineConfig({
             const isPremium =
               post.postType === "premium" || Boolean(post.isPremium);
             return `
-              <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="/${post.slug?.current}" data-private="${isPrivate}">
+              <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="/blog/${post.slug?.current}" data-private="${isPrivate}">
                 ${isPremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                 ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                 ${post.imageUrl ? `<img src="${imgUrl(post.imageUrl, 600)}" alt="${post.title}" loading="lazy" decoding="async" />` : ""}

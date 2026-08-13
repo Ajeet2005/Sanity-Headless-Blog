@@ -2519,10 +2519,15 @@
     // legacy ?slug= form is still supported (the server 301-redirects to the
     // clean URL, and this fallback covers static hosting).
     const pathSlug = (() => {
-      const first = window.location.pathname.replace(/^\/+/, "").split("/")[0] || "";
+      // Clean URLs look like /blog/<slug> or /journal/<slug> (the legacy
+      // unprefixed /<slug> form is still supported for static hosting).
+      const parts = window.location.pathname.replace(/^\/+/, "").split("/");
+      const first = parts[0] || "";
       if (!first || first.includes(".")) return "";
+      const candidate =
+        first === "blog" || first === "journal" ? parts[1] || "" : first;
       try {
-        return decodeURIComponent(first);
+        return decodeURIComponent(candidate);
       } catch (err) {
         return ""; // malformed percent-encoding in the URL — treat as no slug
       }
@@ -2874,7 +2879,7 @@
               const isMorePremium = morePost.postType === "premium" || Boolean(morePost.isPremium);
               const isMorePrivate = Boolean(morePost.isPrivate);
               return `
-                      <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="/${morePost.slug}" data-private="${isMorePrivate}">
+                      <a class="card${isMorePrivate ? " private" : ""}${isMorePremium ? " premium" : ""}" href="/${morePost.postType === 'journal' ? 'journal' : 'blog'}/${morePost.slug}" data-private="${isMorePrivate}">
                         ${isMorePremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                         ${isMorePrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
                         ${morePost.imageUrl ? `<img src="${imgUrl(morePost.imageUrl, 600)}" alt="${morePost.title}" loading="lazy" decoding="async" />` : ""}
