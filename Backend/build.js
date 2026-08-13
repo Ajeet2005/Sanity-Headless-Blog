@@ -145,7 +145,7 @@ async function main() {
     `[build] Injected ${posts.length} static post link(s) into ${path.relative(process.cwd(), INDEX_HTML)}`
   );
 }
-
+//
 main().catch((err) => {
   console.error('[build] Failed:', err && err.message ? err.message : err);
   process.exit(1);
