@@ -39,7 +39,10 @@ self.addEventListener('activate', event => {
 // Fetch event - network first, fallback to cache
 self.addEventListener('fetch', event => {
   event.respondWith(
-    fetch(event.request)
+    // Navigations bypass the HTTP cache so a fresh page is always served.
+    fetch(event.request, {
+      cache: event.request.mode === 'navigate' ? 'no-store' : 'default',
+    })
       .then(response => {
         // Cache successful GET responses (POST/PUT/etc. are never cached)
         if (response.status === 200 && event.request.method === 'GET') {

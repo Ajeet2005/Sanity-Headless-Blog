@@ -376,6 +376,35 @@ const HOMEPAGE_LINKS_CACHE_MS = 60 * 60 * 1000; // 1 hour
 const POST_LINKS_START = '<!-- SEO_STATIC_POST_LINKS_START -->';
 const POST_LINKS_END = '<!-- SEO_STATIC_POST_LINKS_END -->';
 
+// Card rendering helpers — mirror the JS-rendered cards so the static
+// fallback looks like the real blog (image, title, excerpt, author, date)
+// instead of plain text links.
+function cardTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
+  const diff = Date.now() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  if (minutes < 60) return `${minutes} min ago`;
+  if (hours < 24) return `${hours} hr ago`;
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function cardInitials(name) {
+  if (!name) return '?';
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 // Returns the HTML block to place between the SEO markers, fetched from
 // Sanity and cached. Falls back to the previous (possibly stale) block when
 // the fetch fails so the homepage never breaks on a Sanity hiccup.
@@ -397,7 +426,14 @@ async function fetchHomepageLinksBlock() {
   try {
     const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'xsd8o1za';
     const DATASET = process.env.SANITY_DATASET || 'production';
-    const QUERY = encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt, postType}`);
+    const QUERY = encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{
+      title, slug, excerpt, publishedAt, _createdAt, readingTime, isPrivate, isPremium, postType,
+      "authorName": author->name,
+      "authorImage": author->image.asset->url,
+      "mainImageUrl": mainImage.asset->url,
+      "ogImageUrl": ogImage.asset->url,
+      "categories": categories[]->title
+    }`);
     const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
 
     const sanityRes = await fetch(sanityUrl);
@@ -412,9 +448,55 @@ async function fetchHomepageLinksBlock() {
       .map((post) => {
         const slug = encodeURIComponent(post.slug.current);
         const title = escapeHtml(post.title || 'Untitled');
+        const imageUrl = sanityImg(post.ogImageUrl || post.mainImageUrl, 600, 70);
+        const isPremium =
+          post.postType === 'premium' || Boolean(post.isPremium);
+        const isPrivate = Boolean(post.isPrivate);
+        const excerpt = escapeHtml(post.excerpt || '');
+        const authorName = escapeHtml(post.authorName || 'Unknown');
+        const authorImage = post.authorImage || '';
+        const dateStr = cardTimeAgo(post.publishedAt || post._createdAt);
+        const cats = Array.isArray(post.categories)
+          ? post.categories
+              .filter(Boolean)
+              .map((c) => `<span class="card-cat">${escapeHtml(c)}</span>`)
+              .join('')
+          : '';
         return (
-          `<a class="card seo-static-post" href="/${postPrefix(post)}/${slug}">` +
-          `<div class="card-body"><h3>${title}</h3></div></a>`
+          `<a class="card seo-static-post" href="/${postPrefix(post)}/${slug}"` +
+          (isPrivate ? ' data-private="true"' : '') +
+          '>' +
+          (isPremium
+            ? '<div class="card-premium" title="Premium post">★</div>'
+            : '') +
+          (isPrivate
+            ? '<div class="card-lock" title="Private post">🔒</div>'
+            : '') +
+          (imageUrl
+            ? `<img src="${imageUrl}" alt="${title}" loading="lazy" decoding="async" />`
+            : '') +
+          '<div class="card-body">' +
+          (cats ? `<div class="card-cats">${cats}</div>` : '') +
+          `<h3>${title}</h3>` +
+          (excerpt ? `<p>${excerpt}</p>` : '') +
+          '<div class="card-footer">' +
+          '<div class="author">' +
+          '<div class="author-avatar">' +
+          (authorImage
+            ? `<img src="${authorImage}" alt="${authorName}" />`
+            : cardInitials(post.authorName || '')) +
+          '</div>' +
+          `<span class="author-name">${authorName}</span>` +
+          '</div>' +
+          '<div class="card-meta">' +
+          (post.readingTime
+            ? `<span class="reading-time">⏱ ${post.readingTime} min</span>`
+            : '') +
+          (dateStr ? `<span class="date-str">📅 ${dateStr}</span>` : '') +
+          '</div>' +
+          '</div>' +
+          '</div>' +
+          '</a>'
         );
       });
 
@@ -439,7 +521,7 @@ app.get(['/', '/index.html'], async (req, res) => {
     const endIdx = html.indexOf(POST_LINKS_END);
     if (startIdx !== -1 && endIdx > startIdx) {
       html = html.slice(0, startIdx) + block + html.slice(endIdx + POST_LINKS_END.length);
-      res.set('Cache-Control', 'public, max-age=300'); // short client cache; server refreshes hourly
+      res.set('Cache-Control', 'public, max-age=60'); // short client cache; server refreshes hourly
       return res.send(html);
     }
     return res.sendFile(filePath);

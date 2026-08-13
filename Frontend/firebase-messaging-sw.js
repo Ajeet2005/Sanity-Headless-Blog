@@ -143,7 +143,11 @@ self.addEventListener('notificationclick', (event) => {
    never /api/ calls. */
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    fetch(event.request)
+    // Navigations bypass the HTTP cache so a fresh page is always served
+    // (crawlers/users never see a stale cached shell after a deploy).
+    fetch(event.request, {
+      cache: event.request.mode === 'navigate' ? 'no-store' : 'default',
+    })
       .then((response) => {
         if (
           response.status === 200 &&
