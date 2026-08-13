@@ -54,9 +54,19 @@ self.addEventListener('fetch', event => {
         // Offline: serve from cache
         return caches.match(event.request).then(cached => {
           if (cached) return cached;
-          // If requesting a post page, fall back to the cached post.html
           if (event.request.mode === 'navigate') {
-            return caches.match('post.html');
+            // Serve the correct app shell for the URL being navigated to.
+            // Never fall back to post.html for the homepage/journal — post.html
+            // without a slug renders an empty "Post not found." page.
+            const url = new URL(event.request.url);
+            const path = url.pathname;
+            let shell = 'post.html';
+            if (path === '/' || path === '/index.html') shell = 'index.html';
+            else if (path === '/journal.html') shell = 'journal.html';
+            else if (path === '/login.html') shell = 'login.html';
+            return caches.match(shell).then(shellResponse => {
+              return shellResponse || new Response('Offline', { status: 503 });
+            });
           }
           return new Response('Offline', { status: 503 });
         });

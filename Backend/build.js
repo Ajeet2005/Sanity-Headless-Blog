@@ -48,9 +48,12 @@ const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'xsd8o1za';
 const DATASET = process.env.SANITY_DATASET || 'production';
 const API_VERSION = '2024-01-01';
 
-// All published, non-draft posts (Sanity's query API only returns published
-// documents by default). We only need the fields required to build a link.
-const GROQ = `*[_type == "post"]{title, slug, publishedAt}`;
+// All published, non-draft posts that belong on the BLOG feed (Sanity's query
+// API only returns published documents by default). Matches the postType
+// filter used by the frontend's blog query so journal/private posts never
+// appear on the homepage's static shell. We only need the fields required to
+// build a link.
+const GROQ = `*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt}`;
 
 const client = createClient({
   projectId: PROJECT_ID,

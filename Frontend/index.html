@@ -843,12 +843,12 @@
       <header>
         <div class="header-left">
           <div class="brand-block">
-            <h1><a href="index.html" style="color: inherit; text-decoration: none;">Anubhav</a></h1>
+            <h1><a href="/" style="color: inherit; text-decoration: none;">Anubhav</a></h1>
             <p class="brand-tagline"><i>Lived, Learned, Documented</i></p>
           </div>
           <nav class="nav-links">
-            <a class="nav-link active" href="index.html">Blog</a>
-            <a class="nav-link" href="journal.html">Journal</a>
+            <a class="nav-link active" href="/">Blog</a>
+            <a class="nav-link" href="/journal.html">Journal</a>
           </nav>
           <div class="search-wrap" role="search">
             <span class="search-icon">🔍</span>
@@ -915,11 +915,7 @@
             <!-- SEO_STATIC_POST_LINKS_START -->
             <a class="card seo-static-post" href="discovering-hidden-charm-of-mountain-travel"><div class="card-body"><h3>Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List</h3></div></a>
             <a class="card seo-static-post" href="8-month-design-journey"><div class="card-body"><h3>5 Lessons From My 8-Month Design Journey</h3></div></a>
-            <a class="card seo-static-post" href="random-plan-to-mustang"><div class="card-body"><h3>A Ride That Changed Nothing, Yet Changed Everything</h3></div></a>
             <a class="card seo-static-post" href="understanding-sanity-importance-maintain"><div class="card-body"><h3>Understanding Sanity: Meaning, Importance &amp; How to Maintain It</h3></div></a>
-            <a class="card seo-static-post" href="why-mountain-travel-should-be-on-every-traveler-s-bucket-list"><div class="card-body"><h3>Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List</h3></div></a>
-            <a class="card seo-static-post" href="2-day-mardi-himal-trek-experience"><div class="card-body"><h3>How We Completed the Mardi Himal Trek in Just Two Days</h3></div></a>
-            <a class="card seo-static-post" href="north-annapurna-base-camp"><div class="card-body"><h3>North Annapurna Base Camp: Where the Road Ends and the Mountains Begin</h3></div></a>
             <!-- SEO_STATIC_POST_LINKS_END -->
           </div>
         </div>
@@ -2592,11 +2588,21 @@ export default defineConfig({
         .then((data) => {
           allPosts = data.result || [];
           buildSidebar(allPosts);
+          if (!allPosts.length) {
+            // Sanity returned no blog/premium posts. Keep the pre-rendered
+            // static links (SEO shell) visible instead of replacing them
+            // with an empty-state message, so the blog never looks empty.
+            const countEl = document.getElementById("post-count");
+            if (countEl) countEl.textContent = "";
+            return;
+          }
           renderPosts(allPosts);
         })
         .catch(() => {
-          document.getElementById("status").textContent =
-            "Failed to load posts.";
+          // Fetch failed (offline, slow cold start…). The pre-rendered
+          // static links remain visible — just note the state in the count.
+          const countEl = document.getElementById("post-count");
+          if (countEl) countEl.textContent = "Failed to load posts.";
         });
     </script>
 

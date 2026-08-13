@@ -327,7 +327,7 @@ async function fetchHomepageLinksBlock() {
   try {
     const PROJECT_ID = process.env.SANITY_PROJECT_ID || 'xsd8o1za';
     const DATASET = process.env.SANITY_DATASET || 'production';
-    const QUERY = encodeURIComponent(`*[_type == "post"]{title, slug, publishedAt}`);
+    const QUERY = encodeURIComponent(`*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])]{title, slug, publishedAt}`);
     const sanityUrl = `https://${PROJECT_ID}.api.sanity.io/v2024-01-01/data/query/${DATASET}?query=${QUERY}`;
 
     const sanityRes = await fetch(sanityUrl);

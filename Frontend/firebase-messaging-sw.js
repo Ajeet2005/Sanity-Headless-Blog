@@ -21,8 +21,9 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v4'; // bumped when cached payload changes (vendor SDK files)
+const CACHE_NAME = 'anubhav-v5'; // bumped when cached payload changes (vendor SDK files)
 const urlsToCache = [
+  '/',
   'index.html',
   'journal.html',
   'login.html',
@@ -160,7 +161,19 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request).then((cached) => {
           if (cached) return cached;
           if (event.request.mode === 'navigate') {
-            return caches.match('post.html');
+            // Serve the correct app shell for the URL being navigated to.
+            // NEVER fall back to post.html for the homepage/journal — post.html
+            // without a slug renders an empty "Post not found." page, which
+            // looks like the blog is broken.
+            const url = new URL(event.request.url);
+            const path = url.pathname;
+            let shell = 'post.html';
+            if (path === '/' || path === '/index.html') shell = 'index.html';
+            else if (path === '/journal.html') shell = 'journal.html';
+            else if (path === '/login.html') shell = 'login.html';
+            return caches.match(shell).then((shellResponse) => {
+              return shellResponse || new Response('Offline', { status: 503 });
+            });
           }
           return new Response('Offline', { status: 503 });
         });
