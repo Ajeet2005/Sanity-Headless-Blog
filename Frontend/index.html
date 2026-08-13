@@ -928,7 +928,7 @@
             <p class="brand-tagline"><i>Lived, Learned, Documented</i></p>
           </div>
           <nav class="nav-links">
-            <a class="nav-link active" href="/">Blog</a>
+            <a class="nav-link active" href="/index.html">Blog</a>
             <a class="nav-link" href="/journal.html">Journal</a>
           </nav>
           <div class="search-wrap" role="search">
@@ -2667,9 +2667,13 @@ export default defineConfig({
 
       // Show skeleton cards while posts are loading (replaces the static
       // SEO links in the browser; crawlers still see the raw-HTML links).
+      // The static links are kept aside so they can be restored if the
+      // Sanity fetch fails or returns nothing — the blog must never look
+      // empty.
       (function () {
         const grid = document.getElementById("posts");
         if (!grid) return;
+        window.__staticPostsHTML = grid.innerHTML;
         const sk = (cls) => `<div class="sk ${cls}"></div>`;
         grid.innerHTML = Array.from({ length: 6 })
           .map(
@@ -2690,33 +2694,33 @@ export default defineConfig({
           .join("");
       })();
 
+      // Restore the pre-rendered static post links when Sanity can't be
+      // reached (offline, cold start, CORS) or returns no blog posts, so
+      // the homepage always shows content instead of skeletons/empty state.
+      function restoreStaticPosts() {
+        const grid = document.getElementById("posts");
+        if (!grid) return;
+        grid.innerHTML =
+          window.__staticPostsHTML || '<p id="status">No posts found.</p>';
+      }
+
       fetch(API_URL)
         .then((res) => res.json())
         .then((data) => {
           allPosts = data.result || [];
           buildSidebar(allPosts);
           if (!allPosts.length) {
-            // Sanity returned no blog/premium posts. Keep the pre-rendered
-            // static links (SEO shell) visible instead of replacing them
-            // with an empty-state message, so the blog never looks empty.
-            const countEl = document.getElementById("post-count");
-            if (countEl) countEl.textContent = "";
+            // No blog/premium posts returned — show the static links
+            // instead of an empty-state message.
+            restoreStaticPosts();
             return;
           }
           renderPosts(allPosts);
         })
         .catch(() => {
-<<<<<<< HEAD
-          // Fetch failed (offline, slow cold start…). The pre-rendered
-          // static links remain visible — just note the state in the count.
-          const countEl = document.getElementById("post-count");
-          if (countEl) countEl.textContent = "Failed to load posts.";
-=======
-          const container = document.getElementById("posts");
-          if (container) {
-            container.innerHTML = '<p id="status">Failed to load posts.</p>';
-          }
->>>>>>> 295d4ba4cafec1b495e653a9a73019b1249814d3
+          // Fetch failed (offline, slow cold start…). Show the static
+          // links so the blog never looks empty.
+          restoreStaticPosts();
         });
     </script>
 

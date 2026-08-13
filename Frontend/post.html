@@ -2019,7 +2019,7 @@
           <p class="brand-tagline"><i>Lived, Learned, Documented</i></p>
         </div>
         <nav class="nav-links">
-          <a class="nav-link active" href="/">Blog</a>
+          <a class="nav-link active" href="/index.html">Blog</a>
           <a class="nav-link" href="/journal.html">Journal</a>
         </nav>
         <div class="search-wrap" role="search">
@@ -2541,12 +2541,7 @@
     }
 
     if (!slug) {
-<<<<<<< HEAD
-      document.getElementById("content").innerHTML =
-        '<p id="status">Post not found.</p>';
-=======
       showPostStatus("Post not found.");
->>>>>>> 295d4ba4cafec1b495e653a9a73019b1249814d3
     } else {
       const QUERY =
         encodeURIComponent(`{

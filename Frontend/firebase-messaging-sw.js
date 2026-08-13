@@ -21,11 +21,7 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-<<<<<<< HEAD
-const CACHE_NAME = 'anubhav-v5'; // bumped when cached payload changes (vendor SDK files)
-=======
-const CACHE_NAME = 'anubhav-v5'; // bump this on every deploy so browsers refresh cached pages
->>>>>>> 295d4ba4cafec1b495e653a9a73019b1249814d3
+const CACHE_NAME = 'anubhav-v6'; // bump this on every deploy so browsers refresh cached pages
 const urlsToCache = [
   '/',
   'index.html',
