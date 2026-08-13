@@ -498,6 +498,86 @@
       margin-top: 80px;
     }
 
+    /* ── SKELETON LOADER ── */
+    .sk {
+      position: relative;
+      overflow: hidden;
+      background: var(--tag-hover-bg);
+      border-radius: 6px;
+    }
+    .sk::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.55),
+        transparent
+      );
+      animation: shimmer 1.4s infinite;
+    }
+    [data-theme="dark"] .sk::after {
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.07),
+        transparent
+      );
+    }
+    @keyframes shimmer {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sk::after {
+        animation: none;
+      }
+    }
+    .post-skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sk-cover {
+      height: 360px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .sk-line {
+      height: 14px;
+    }
+    .sk-title {
+      height: 30px;
+      width: 80%;
+    }
+    .sk-title-short {
+      height: 22px;
+      width: 45%;
+    }
+    .sk-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sk-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .sk-meta-line {
+      width: 180px;
+      height: 12px;
+    }
+    .sk-body-short {
+      width: 60%;
+    }
+
     .private-badge {
       display: inline-flex;
       align-items: center;
@@ -1968,7 +2048,22 @@
     </header>
 
     <main id="content">
-      <!-- <p id="status">Loading post...</p> -->
+      <div class="post-skeleton" id="post-skeleton" aria-hidden="true">
+        <div class="sk sk-cover"></div>
+        <div class="sk sk-line sk-title"></div>
+        <div class="sk sk-line sk-title-short"></div>
+        <div class="sk-meta">
+          <div class="sk sk-avatar"></div>
+          <div class="sk sk-line sk-meta-line"></div>
+        </div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line sk-body-short"></div>
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line sk-body-short"></div>
+      </div>
+      <p id="status" style="display:none;"></p>
     </main>
   </div>
 
@@ -2088,6 +2183,7 @@
         return url;
       }
     }
+    window.imgUrl = imgUrl;
     const appShell = document.getElementById("app-shell");
     const modal = document.getElementById("auth-modal");
     const emailInput = document.getElementById("auth-email");
@@ -2433,9 +2529,24 @@
     })();
     const slug = params.get("slug") || pathSlug;
 
+    // Hide the skeleton and show a status message (post not found / failed).
+    function showPostStatus(msg) {
+      const skeleton = document.getElementById("post-skeleton");
+      if (skeleton) skeleton.style.display = "none";
+      const statusEl = document.getElementById("status");
+      if (statusEl) {
+        statusEl.textContent = msg;
+        statusEl.style.display = "";
+      }
+    }
+
     if (!slug) {
+<<<<<<< HEAD
       document.getElementById("content").innerHTML =
         '<p id="status">Post not found.</p>';
+=======
+      showPostStatus("Post not found.");
+>>>>>>> 295d4ba4cafec1b495e653a9a73019b1249814d3
     } else {
       const QUERY =
         encodeURIComponent(`{
@@ -2808,8 +2919,7 @@
           loadReviews(slug);
         })
         .catch(() => {
-          document.getElementById("status").textContent =
-            "Failed to load post.";
+          showPostStatus("Failed to load post.");
         });
     }
 

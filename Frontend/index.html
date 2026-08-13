@@ -444,6 +444,87 @@
         grid-column: 1/-1;
       }
 
+      /* ── SKELETON LOADER ── */
+      .sk {
+        position: relative;
+        overflow: hidden;
+        background: var(--tag-hover-bg);
+        border-radius: 6px;
+      }
+      .sk::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.5),
+          transparent
+        );
+        animation: shimmer 1.4s infinite;
+      }
+      [data-theme="dark"] .sk::after {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.07),
+          transparent
+        );
+      }
+      @keyframes shimmer {
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sk::after {
+          animation: none;
+        }
+      }
+      .skeleton-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .sk-image {
+        height: 160px;
+        border-radius: 0;
+      }
+      .skeleton-card-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .sk-line {
+        height: 14px;
+      }
+      .sk-card-title {
+        height: 16px;
+        width: 85%;
+      }
+      .sk-short {
+        width: 55%;
+      }
+      .sk-sm {
+        width: 40%;
+        height: 12px;
+      }
+      .sk-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .skeleton-card-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
       /* ── CARDS ── */
       .card {
         background: var(--surface);
@@ -2187,6 +2268,7 @@ export default defineConfig({
           return url;
         }
       }
+      window.imgUrl = imgUrl;
       const modal = document.getElementById("auth-modal");
       const appShell = document.getElementById("app-shell");
       const statusEl = document.getElementById("auth-status");
@@ -2583,6 +2665,31 @@ export default defineConfig({
         }
       });
 
+      // Show skeleton cards while posts are loading (replaces the static
+      // SEO links in the browser; crawlers still see the raw-HTML links).
+      (function () {
+        const grid = document.getElementById("posts");
+        if (!grid) return;
+        const sk = (cls) => `<div class="sk ${cls}"></div>`;
+        grid.innerHTML = Array.from({ length: 6 })
+          .map(
+            () => `
+          <div class="skeleton-card" aria-hidden="true">
+            ${sk("sk-image")}
+            <div class="skeleton-card-body">
+              ${sk("sk-line sk-card-title")}
+              ${sk("sk-line")}
+              ${sk("sk-line sk-short")}
+              <div class="skeleton-card-footer">
+                ${sk("sk-avatar")}
+                ${sk("sk-line sk-sm")}
+              </div>
+            </div>
+          </div>`,
+          )
+          .join("");
+      })();
+
       fetch(API_URL)
         .then((res) => res.json())
         .then((data) => {
@@ -2599,10 +2706,17 @@ export default defineConfig({
           renderPosts(allPosts);
         })
         .catch(() => {
+<<<<<<< HEAD
           // Fetch failed (offline, slow cold start…). The pre-rendered
           // static links remain visible — just note the state in the count.
           const countEl = document.getElementById("post-count");
           if (countEl) countEl.textContent = "Failed to load posts.";
+=======
+          const container = document.getElementById("posts");
+          if (container) {
+            container.innerHTML = '<p id="status">Failed to load posts.</p>';
+          }
+>>>>>>> 295d4ba4cafec1b495e653a9a73019b1249814d3
         });
     </script>
 
