@@ -21,7 +21,7 @@
 importScripts('./vendor/firebase-app-compat.js');
 importScripts('./vendor/firebase-messaging-compat.js');
 
-const CACHE_NAME = 'anubhav-v6'; // bump this on every deploy so browsers refresh cached pages
+const CACHE_NAME = 'anubhav-v7'; // bump this on every deploy so browsers refresh cached pages
 const urlsToCache = [
   '/',
   'index.html',

@@ -2726,7 +2726,7 @@ export default defineConfig({
 
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('firebase-messaging-sw.js')
+        navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' })
           .then(function () { console.log('SW registered'); })
           .catch(function () { console.log('SW registration failed'); });
       }

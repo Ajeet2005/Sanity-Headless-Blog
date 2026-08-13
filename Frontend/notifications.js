@@ -302,7 +302,7 @@
       }
     }
     if (!reg) {
-      reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      reg = await navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' });
     }
     return reg;
   }
@@ -338,7 +338,7 @@
         console.warn('getToken failed again — re-registering the service worker:', err2);
         try {
           await registration.unregister().catch(() => {});
-          const fresh = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+          const fresh = await navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' });
           await navigator.serviceWorker.ready;
           return await messaging.getToken({ vapidKey, serviceWorkerRegistration: fresh });
         } catch (recoverErr) {

@@ -2047,6 +2047,21 @@
       </button>
     </header>
 
+    <script>
+      // Highlight the correct section in the nav on post pages:
+      // /journal/… → Journal, everything else (/blog/…, legacy) → Blog.
+      (function () {
+        var path = window.location.pathname;
+        var isJournal = path.indexOf("/journal") === 0;
+        var blogLink = document.querySelector('.nav-link[href="/index.html"]');
+        var journalLink = document.querySelector(
+          '.nav-link[href="/journal.html"]',
+        );
+        if (blogLink) blogLink.classList.toggle("active", !isJournal);
+        if (journalLink) journalLink.classList.toggle("active", isJournal);
+      })();
+    </script>
+
     <main id="content">
       <div class="post-skeleton" id="post-skeleton" aria-hidden="true">
         <div class="sk sk-cover"></div>
@@ -3587,7 +3602,7 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('firebase-messaging-sw.js')
+      navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' })
         .then(function () { console.log('SW registered'); })
         .catch(function () { console.log('SW registration failed'); });
     }
