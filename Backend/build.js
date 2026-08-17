@@ -151,7 +151,7 @@ function buildLinksBlock(posts) {
             .map((c) => `<span class="card-cat">${escapeHtml(c)}</span>`)
             .join('')
         : '';
-
+//
       return (
         `<a class="card seo-static-post" href="/${prefix}/${slug}"` +
         (isPrivate ? ' data-private="true"' : '') +
