@@ -124,7 +124,7 @@
 
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' })
           .then(function () { console.log('SW registered'); })
           .catch(function () { console.log('SW registration failed'); });
       }

@@ -872,6 +872,27 @@
         background: var(--tag-hover-bg);
       }
 
+      /* ── NOTIFICATION TOGGLE (consistent with about/theme buttons) ── */
+      .notif-toggle {
+        background: var(--toggle-bg);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        color: var(--toggle-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        padding: 0;
+        position: relative;
+      }
+
+      .notif-toggle:hover { border-color: var(--card-hover-border); }
+      .notif-toggle svg { display: block; }
+
       /* ── DOCUMENTATION VIEW ── */
       .doc-view {
         position: fixed;
@@ -2726,7 +2747,7 @@ export default defineConfig({
 
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' })
           .then(function () { console.log('SW registered'); })
           .catch(function () { console.log('SW registration failed'); });
       }

@@ -25,7 +25,7 @@
   // (www.gstatic.com) gets blocked by browser tracking prevention (e.g.
   // Microsoft Edge) and some privacy browsers, which breaks push registration.
   // Same-origin files are immune to that and also load faster.
-  const FIREBASE_BASE = 'vendor/';
+  const FIREBASE_BASE = '/vendor/';
   const FCM_APP_NAME = 'anubhav-notifications';
   const TOKEN_STORAGE_KEY = 'fcmToken';
 
@@ -302,7 +302,7 @@
       }
     }
     if (!reg) {
-      reg = await navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' });
+      reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' });
     }
     return reg;
   }
@@ -338,7 +338,7 @@
         console.warn('getToken failed again — re-registering the service worker:', err2);
         try {
           await registration.unregister().catch(() => {});
-          const fresh = await navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' });
+          const fresh = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' });
           await navigator.serviceWorker.ready;
           return await messaging.getToken({ vapidKey, serviceWorkerRegistration: fresh });
         } catch (recoverErr) {

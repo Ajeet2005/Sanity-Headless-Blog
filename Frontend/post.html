@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="favicon.png" type="image/png" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -1964,6 +1964,27 @@
       background: var(--tag-hover-bg);
     }
 
+    /* ── NOTIFICATION TOGGLE (consistent with about/theme buttons) ── */
+    .notif-toggle {
+      background: var(--toggle-bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      color: var(--toggle-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    .notif-toggle:hover { border-color: var(--card-hover-border); }
+    .notif-toggle svg { display: block; }
+
     /* ── DOCUMENTATION VIEW ── */
     .doc-view {
       position: fixed;
@@ -3602,7 +3623,7 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('firebase-messaging-sw.js', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' })
         .then(function () { console.log('SW registered'); })
         .catch(function () { console.log('SW registration failed'); });
     }
@@ -3647,7 +3668,7 @@
       });
     })();
   </script>
-<script src="notifications.js"></script>
+<script src="/notifications.js"></script>
 </body>
 <!-- //test -->
 
