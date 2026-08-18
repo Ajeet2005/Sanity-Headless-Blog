@@ -337,6 +337,7 @@ const baseUrl = (
     const urls = [
       { loc: `${baseUrl}/`, lastmod: '' },
       { loc: `${baseUrl}/journal.html`, lastmod: '' },
+      { loc: `${baseUrl}/footage.html`, lastmod: '' },
       ...posts.map((p) => ({
         loc: `${baseUrl}/${postPrefix(p)}/${encodeURIComponent(p.slug)}`,
         lastmod: toLastmod(p.lastmod),
