@@ -2659,11 +2659,14 @@
             post.ogImageUrl ||
             post.imageUrl ||
             window.location.origin + "/favicon.png";
+          // Build the clean canonical URL matching the server-side format
+          // e.g. https://site.com/journal/my-post  (NOT /post.html?slug=...)
+          const pathParts = window.location.pathname.replace(/^\/+/, "").split("/");
+          const pathFirst = pathParts[0] || "";
+          const prefix =
+            pathFirst === "blog" || pathFirst === "journal" ? pathFirst : "blog";
           const canonicalUrl =
-            window.location.origin +
-            window.location.pathname +
-            "?slug=" +
-            encodeURIComponent(slug);
+            window.location.origin + "/" + prefix + "/" + encodeURIComponent(slug);
 
           document.title = postTitle + " | Anubhav";
 
