@@ -2249,6 +2249,12 @@
     </script>
 
     <main id="content">
+      <!-- SSR_POST_CONTENT_START -->
+      <!-- The server (Backend/server.js) replaces everything between the SSR
+           markers with a fully rendered static version of the article so
+           crawlers that don't run JavaScript see the real content. When this
+           script runs it overwrites #content entirely, so human visitors
+           always get the live JS-rendered page. -->
       <div class="post-skeleton" id="post-skeleton" aria-hidden="true">
         <div class="sk sk-cover"></div>
         <div class="sk sk-line sk-title"></div>
@@ -2265,6 +2271,7 @@
         <div class="sk sk-line sk-body-short"></div>
       </div>
       <p id="status" style="display:none;"></p>
+      <!-- SSR_POST_CONTENT_END -->
     </main>
   </div>
 

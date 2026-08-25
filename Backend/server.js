@@ -95,6 +95,138 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
+// ── SEO: server-side rendering of the article body ──
+// Google's first crawl pass sees raw HTML; content that only exists after
+// JavaScript runs is queued into a slow second-wave render, which delays
+// indexing. These helpers mirror Frontend/post.html's client renderer so the
+// server can inject a static copy of each article into the page. Human
+// visitors never see it — the client script overwrites #content on load.
+
+// Portable Text → HTML (mirrors renderPortableText in Frontend/post.html).
+function ssrRenderPortableText(blocks) {
+  if (!blocks || !Array.isArray(blocks)) return '';
+
+  return blocks.map(block => {
+    if (block._type === 'block') {
+      const style = block.style || 'normal';
+      const htmlContent = block.children ? block.children.map(child => {
+        let text = escapeHtml(child.text || '');
+        if (!text) return '';
+        (child.marks || []).forEach(mark => {
+          if (mark === 'strong') text = `<strong>${text}</strong>`;
+          else if (mark === 'em') text = `<em>${text}</em>`;
+          else {
+            const linkDef = block.markDefs && block.markDefs.find(def => def._key === mark);
+            if (linkDef && linkDef.href) {
+              text = `<a href="${escapeHtml(linkDef.href)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+            }
+          }
+        });
+        return text;
+      }).join('') : '';
+
+      switch (style) {
+        case 'h1': return `<h1>${htmlContent}</h1>`;
+        case 'h2': return `<h2>${htmlContent}</h2>`;
+        case 'h3': return `<h3>${htmlContent}</h3>`;
+        case 'h4': return `<h4>${htmlContent}</h4>`;
+        case 'blockquote': return `<blockquote>${htmlContent}</blockquote>`;
+        default: return `<p>${htmlContent}</p>`;
+      }
+    }
+
+    if (block._type === 'codeBlock') {
+      const code = escapeHtml(block.code || '');
+      const language = escapeHtml(block.language || '');
+      const filename = block.filename ? `<div class="code-filename">${escapeHtml(block.filename)}</div>` : '';
+      return `
+        <div class="code-block-container">
+          ${filename}
+          <pre><code class="language-${language}">${code}</code></pre>
+        </div>
+      `;
+    }
+
+    if (block._type === 'image' && block.asset && block.asset.url) {
+      const imageUrl = sanityImg(block.asset.url, 1200);
+      const caption = block.caption ? `<div class="image-caption">${escapeHtml(block.caption)}</div>` : '';
+      return `
+        <div class="body-image-container">
+          <img class="body-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(block.caption || '')}" loading="lazy" decoding="async" />
+          ${caption}
+        </div>
+      `;
+    }
+
+    // Crawlers get a plain native-controls player (the custom-chrome player is
+    // built by the client script for human visitors).
+    if (block._type === 'video' && block.videoFile && block.videoFile.asset && block.videoFile.asset.url) {
+      const videoUrl = escapeHtml(block.videoFile.asset.url);
+      const caption = block.caption ? `<div class="video-caption">${escapeHtml(block.caption)}</div>` : '';
+      return `
+        <div class="body-video-container">
+          <div class="custom-video-wrapper">
+            <video controls preload="metadata" playsinline>
+              <source src="${videoUrl}" />
+            </video>
+          </div>
+          ${caption}
+        </div>
+      `;
+    }
+
+    return '';
+  }).join('\n');
+}
+
+// Full static article: cover image, categories, title, byline and body —
+// styled with the same classes post.html already defines so no-JS visitors
+// get a readable page too.
+function buildSsrPostHtml(post) {
+  const parts = [];
+  const title = escapeHtml(post.title || 'Blog Post');
+
+  const cover = post.ogImageUrl || post.imageUrl;
+  if (cover) {
+    parts.push(`<img class="cover" src="${escapeHtml(sanityImg(cover, 1200))}" alt="${title}" fetchpriority="high" decoding="async" />`);
+  }
+
+  if (Array.isArray(post.categories) && post.categories.length) {
+    parts.push(
+      `<div class="post-cats">${post.categories.map(c => `<span class="post-cat">${escapeHtml(c)}</span>`).join('')}</div>`
+    );
+  }
+
+  parts.push(`<h1>${title}</h1>`);
+
+  const dateStr = post.publishedAt || post._updatedAt;
+  let dateHtml = '';
+  if (dateStr) {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      dateHtml = `<span class="date-str">📅 ${d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>`;
+    }
+  }
+  const authorImg = post.authorImage
+    ? `<img src="${escapeHtml(sanityImg(post.authorImage, 96))}" alt="${escapeHtml(post.authorName || '')}" />`
+    : '';
+  parts.push(
+    `<div class="meta"><div class="author-meta-top"><div class="author-avatar">${authorImg}</div>` +
+    `<div class="author-details"><span class="author-name">${escapeHtml(post.authorName || 'Unknown')}</span></div></div>` +
+    `<div class="meta-right">${dateHtml}</div></div>`
+  );
+
+  parts.push(`<div class="body">${ssrRenderPortableText(post.body)}</div>`);
+
+  if (Array.isArray(post.tags) && post.tags.length) {
+    parts.push(
+      `<div class="tags-section"><div class="tags">${post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('')}</div></div>`
+    );
+  }
+
+  return parts.join('\n');
+}
+
 // ── SEO: post pages — clean URLs ──
 // Posts are served at clean URLs like /8-month-design-journey (no ?slug=
 // query parameter). The legacy /post.html?slug=… form permanently redirects
@@ -122,12 +254,22 @@ async function servePostPage(slug, baseUrl, res, expectedPrefix) {
     publishedAt,
     _updatedAt,
     postType,
+    isPrivate,
+    isPremium,
     "authorName": author->name,
     "authorImage": author->image.asset->url,
     "categories": categories[]->title,
     tags,
     "imageUrl": mainImage.asset->url,
-    "ogImageUrl": ogImage.asset->url
+    "ogImageUrl": ogImage.asset->url,
+    "body": body[]{
+      ...,
+      asset->,
+      videoFile{
+        ...,
+        asset->
+      }
+    }
   }`);
   const sanityUrl = `https://xsd8o1za.api.sanity.io/v2024-01-01/data/query/production?query=${QUERY}`;
 
@@ -199,6 +341,22 @@ async function servePostPage(slug, baseUrl, res, expectedPrefix) {
       .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${escapeHtml(canonicalUrl)}" />`)
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)} | Anubhav</title>`)
       .replace(/<script type="application\/ld\+json" id="post-schema">[\s\S]*?<\/script>/, `<script type="application/ld+json" id="post-schema">${jsonLd}</script>`);
+
+    // Inject a static, fully rendered copy of the article between the SSR
+    // markers so crawlers that don't execute JavaScript see the real content.
+    // Skipped for private posts (must not leak gated content into raw HTML)
+    // and premium posts (the paywall preview is enforced client-side).
+    const isPrivatePost = Boolean(post.isPrivate);
+    const isPremiumPost = post.postType === 'premium' || Boolean(post.isPremium);
+    if (!isPrivatePost && !isPremiumPost && Array.isArray(post.body)) {
+      const ssrHtml = buildSsrPostHtml(post);
+      if (ssrHtml.trim()) {
+        html = html.replace(
+          /<!--[\s\S]*?SSR_POST_CONTENT_START[\s\S]*?-->[\s\S]*<!--[\s\S]*?SSR_POST_CONTENT_END[\s\S]*?-->/,
+          `<!-- SSR_POST_CONTENT_START -->${ssrHtml}<!-- SSR_POST_CONTENT_END -->`
+        );
+      }
+    }
 
   if (postPageCache.size > 100) postPageCache.clear(); // bound memory on a long-running server
   postPageCache.set(cacheKey, { at: Date.now(), html });
