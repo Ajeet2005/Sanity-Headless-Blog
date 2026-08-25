@@ -1327,6 +1327,169 @@
       max-width: 90%;
       line-height: 1.4;
     }
+
+    /* ── Custom Video Player ── */
+    .body-video-container {
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .custom-video-wrapper {
+      position: relative;
+      width: 724px;
+      max-width: 100%;
+      height: 400px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .custom-video-wrapper video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      cursor: pointer;
+    }
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      padding: 10px 14px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+    .custom-video-wrapper.hide-controls .video-controls {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .video-progress-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .video-progress-bar {
+      flex: 1;
+      height: 5px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+      transition: height 0.15s;
+    }
+    .video-progress-bar:hover {
+      height: 7px;
+    }
+    .video-progress-filled {
+      height: 100%;
+      background: #e74c3c;
+      border-radius: 3px;
+      position: relative;
+      transition: width 0.1s linear;
+    }
+    .video-progress-filled::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #e74c3c;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .video-progress-bar:hover .video-progress-filled::after {
+      opacity: 1;
+    }
+    .video-btn-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .video-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .video-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .video-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+    .video-time {
+      color: #fff;
+      font-size: 0.8rem;
+      font-family: monospace;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .video-spacer {
+      flex: 1;
+    }
+    .video-volume-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .video-volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 0;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      outline: none;
+      transition: width 0.2s ease;
+      cursor: pointer;
+    }
+    .video-volume-wrap:hover .video-volume-slider {
+      width: 70px;
+    }
+    .video-volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .video-volume-slider::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+    .video-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-style: italic;
+      text-align: center;
+      max-width: 90%;
+      line-height: 1.4;
+    }
     /* ── Feedback / Review Section ── */
     .review-section {
       margin-top: 48px;
@@ -2498,6 +2661,47 @@
               </div>
             `;
           }
+        } else if (block._type === 'video' && block.videoFile?.asset?.url) {
+          const videoUrl = escapeHtml(block.videoFile.asset.url);
+          const caption = block.caption;
+          const uid = 'vid-' + Math.random().toString(36).slice(2, 9);
+          const captionHtml = caption ? `<div class="video-caption">${escapeHtml(caption)}</div>` : '';
+          return `
+            <div class="body-video-container">
+              <div class="custom-video-wrapper" id="${uid}">
+                <video preload="metadata" playsinline>
+                  <source src="${videoUrl}" />
+                </video>
+                <div class="video-controls">
+                  <div class="video-progress-row">
+                    <div class="video-progress-bar" data-vid="${uid}">
+                      <div class="video-progress-filled" data-vid="${uid}"></div>
+                    </div>
+                  </div>
+                  <div class="video-btn-row">
+                    <button class="video-btn" data-vid="${uid}" data-action="play" aria-label="Play">
+                      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    <button class="video-btn" data-vid="${uid}" data-action="rewind" aria-label="Rewind 10 seconds">
+                      <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05 1.04-6.83 2.73L3 8v8h8l-2.81-2.81A7.95 7.95 0 0112.5 10c3.04 0 5.64 1.83 6.79 4.45l1.85-.68C19.89 10.6 16.46 8 12.5 8z"/></svg>
+                    </button>
+                    <button class="video-btn" data-vid="${uid}" data-action="forward" aria-label="Forward 10 seconds">
+                      <svg viewBox="0 0 24 24"><path d="M11.5 8c2.65 0 5.05 1.04 6.83 2.73L21 8v8h-8l2.81-2.81A7.95 7.95 0 0011.5 10c-3.04 0-5.64 1.83-6.79 4.45l-1.85-.68C4.11 10.6 7.54 8 11.5 8z"/></svg>
+                    </button>
+                    <span class="video-time" data-vid="${uid}" data-role="time">0:00 / 0:00</span>
+                    <div class="video-spacer"></div>
+                    <div class="video-volume-wrap">
+                      <button class="video-btn" data-vid="${uid}" data-action="mute" aria-label="Mute">
+                        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.14v7.72A4.49 4.49 0 0016.5 12zM14 3.23v2.06a6.5 6.5 0 010 13.42v2.06A8.5 8.5 0 0014 3.23z"/></svg>
+                      </button>
+                      <input type="range" class="video-volume-slider" data-vid="${uid}" data-role="volume" min="0" max="1" step="0.05" value="1" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ${captionHtml}
+            </div>
+          `;
         }
         return '';
       }).join('');
@@ -2597,7 +2801,11 @@
           "categories": categories[]->title,
           tags, body[]{
             ...,
-            asset->
+            asset->,
+            videoFile{
+              ...,
+              asset->
+            }
           }
         },
         "morePosts": *[_type == "post" && slug.current != "${slug}"] | order(_createdAt desc)[0...3]{
@@ -2957,6 +3165,119 @@
           // Initialize review section after content is rendered
           initReviewForm();
           loadReviews(slug);
+
+          // Initialize custom video players
+          document.querySelectorAll('.custom-video-wrapper').forEach(wrapper => {
+            const video = wrapper.querySelector('video');
+            if (!video) return;
+
+            const playBtn = wrapper.querySelector('[data-action="play"]');
+            const rewindBtn = wrapper.querySelector('[data-action="rewind"]');
+            const forwardBtn = wrapper.querySelector('[data-action="forward"]');
+            const muteBtn = wrapper.querySelector('[data-action="mute"]');
+            const timeDisplay = wrapper.querySelector('[data-role="time"]');
+            const progressBar = wrapper.querySelector('.video-progress-bar');
+            const progressFilled = wrapper.querySelector('.video-progress-filled');
+            const volumeSlider = wrapper.querySelector('[data-role="volume"]');
+
+            // Play / Pause
+            function togglePlay() {
+              if (video.paused || video.ended) {
+                video.play();
+              } else {
+                video.pause();
+              }
+            }
+
+            video.addEventListener('click', togglePlay);
+            if (playBtn) playBtn.addEventListener('click', togglePlay);
+
+            video.addEventListener('play', () => {
+              playBtn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+              playBtn.setAttribute('aria-label', 'Pause');
+            });
+            video.addEventListener('pause', () => {
+              playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+              playBtn.setAttribute('aria-label', 'Play');
+            });
+
+            // Rewind / Forward 10s
+            if (rewindBtn) rewindBtn.addEventListener('click', (e) => { e.stopPropagation(); video.currentTime = Math.max(0, video.currentTime - 10); });
+            if (forwardBtn) forwardBtn.addEventListener('click', (e) => { e.stopPropagation(); video.currentTime = Math.min(video.duration || 0, video.currentTime + 10); });
+
+            // Progress bar
+            function fmtTime(s) {
+              if (!s || isNaN(s)) return '0:00';
+              const m = Math.floor(s / 60);
+              const sec = Math.floor(s % 60);
+              return m + ':' + String(sec).padStart(2, '0');
+            }
+
+            video.addEventListener('timeupdate', () => {
+              if (!video.duration) return;
+              const pct = (video.currentTime / video.duration) * 100;
+              if (progressFilled) progressFilled.style.width = pct + '%';
+              if (timeDisplay) timeDisplay.textContent = fmtTime(video.currentTime) + ' / ' + fmtTime(video.duration);
+            });
+
+            video.addEventListener('loadedmetadata', () => {
+              if (timeDisplay) timeDisplay.textContent = '0:00 / ' + fmtTime(video.duration);
+            });
+
+            if (progressBar) {
+              progressBar.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const rect = progressBar.getBoundingClientRect();
+                const pct = (e.clientX - rect.left) / rect.width;
+                video.currentTime = pct * (video.duration || 0);
+              });
+            }
+
+            // Volume
+            function updateVolumeIcon() {
+              if (!muteBtn) return;
+              if (video.muted || video.volume === 0) {
+                muteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.14v7.72A4.49 4.49 0 0016.5 12zM14 3.23v2.06a6.5 6.5 0 010 13.42v2.06A8.5 8.5 0 0014 3.23z"/><line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2"/></svg>';
+              } else if (video.volume < 0.5) {
+                muteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.14v7.72A4.49 4.49 0 0016.5 12z"/></svg>';
+              } else {
+                muteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.14v7.72A4.49 4.49 0 0016.5 12zM14 3.23v2.06a6.5 6.5 0 010 13.42v2.06A8.5 8.5 0 0014 3.23z"/></svg>';
+              }
+            }
+
+            if (muteBtn) muteBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              video.muted = !video.muted;
+              updateVolumeIcon();
+            });
+
+            if (volumeSlider) {
+              volumeSlider.addEventListener('input', () => {
+                video.volume = parseFloat(volumeSlider.value);
+                video.muted = video.volume === 0;
+                updateVolumeIcon();
+              });
+            }
+
+            video.addEventListener('volumechange', updateVolumeIcon);
+
+            // Auto-hide controls after 3s of no mouse movement
+            let hideTimer;
+            wrapper.addEventListener('mousemove', () => {
+              wrapper.classList.remove('hide-controls');
+              clearTimeout(hideTimer);
+              hideTimer = setTimeout(() => {
+                if (!video.paused) wrapper.classList.add('hide-controls');
+              }, 3000);
+            });
+            wrapper.addEventListener('mouseleave', () => {
+              if (!video.paused) {
+                clearTimeout(hideTimer);
+                hideTimer = setTimeout(() => wrapper.classList.add('hide-controls'), 1000);
+              }
+            });
+            video.addEventListener('pause', () => wrapper.classList.remove('hide-controls'));
+          });
         })
         .catch(() => {
           showPostStatus("Failed to load post.");

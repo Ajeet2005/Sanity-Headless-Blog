@@ -75,6 +75,26 @@ export default defineType({
     }),
     defineArrayMember({
       type: 'object',
+      name: 'video',
+      title: 'Video',
+      fields: [
+        {
+          name: 'videoFile',
+          title: 'Video File',
+          type: 'file',
+          options: {
+            accept: 'video/*',
+          },
+        },
+        {
+          name: 'caption',
+          type: 'string',
+          title: 'Caption',
+        },
+      ],
+    }),
+    defineArrayMember({
+      type: 'object',
       name: 'codeBlock',
       title: 'Code Block',
       fields: [
