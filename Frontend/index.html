@@ -3,29 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="favicon.png" type="image/png+xml" />
+    <link rel="icon" href="favicon.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="favicon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Anubhav" />
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta
+      name="description"
+      content="Anubhav — thoughts, knowledge and journeys by Ajeet Thapa. A headless blog powered by Sanity CMS. Read detailed articles and personal journal entries, filter by category or tag, get push notifications on new posts, and unlock premium content — a clean, fast reading experience."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://sanity-headless-blog.onrender.com/" />
     <meta property="og:title" content="Anubhav" />
     <meta
       property="og:description"
-      content="Thoughts, knowledge and journeys by Ajeet Thapa"
+      content="Anubhav — thoughts, knowledge and journeys by Ajeet Thapa. A headless blog powered by Sanity CMS. Read detailed articles and personal journal entries, filter by category or tag, get push notifications on new posts, and unlock premium content — a clean, fast reading experience."
     />
     <meta
       property="og:image"
-      content="https://sanity-headless-blog.vercel.app/favicon.png"
+      content="https://sanity-headless-blog.onrender.com/favicon.png"
     />
     <meta
       property="og:url"
-      content="https://sanity-headless-blog.vercel.app/"
+      content="https://sanity-headless-blog.onrender.com/"
     />
     <meta property="og:type" content="website" />
-    <title>Anubhav</title>
+    <meta property="og:site_name" content="Anubhav" />
+    <title>Anubhav — Lived, Learned, Documented</title>
+    <script type="application/ld+json" id="site-schema">{"@context": "https://schema.org", "@type": "WebSite", "name": "Anubhav", "alternateName": "Anubhav — Lived, Learned, Documented", "url": "https://sanity-headless-blog.onrender.com/"}</script>
+    <script type="application/ld+json" id="org-schema">{"@context": "https://schema.org", "@type": "Organization", "name": "Anubhav", "url": "https://sanity-headless-blog.onrender.com/", "logo": {"@type": "ImageObject", "url": "https://sanity-headless-blog.onrender.com/favicon.png"}, "founder": {"@type": "Person", "name": "Ajeet Thapa"}}</script>
     <style>
       * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-      /*  */
+
       :root {
         --bg: #f9f9f9;
         --surface: #ffffff;
@@ -63,11 +79,10 @@
         background: var(--bg);
         color: var(--text);
         min-height: 100vh;
-        transition:
-          background 0.2s,
-          color 0.2s;
+        transition: background 0.2s, color 0.2s;
       }
 
+      /* ── HEADER ── */
       header {
         background: var(--surface);
         border-bottom: 1px solid var(--border);
@@ -75,21 +90,26 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 20px;
         position: sticky;
         top: 0;
         z-index: 100;
       }
+
       .header-left {
         display: flex;
         align-items: center;
         gap: 16px;
-        flex-wrap: wrap;
+        flex: 1;
+        min-width: 0;
       }
+
       .brand-block {
         display: flex;
         flex-direction: column;
         gap: 2px;
       }
+
       header h1 {
         font-size: 2rem;
         padding-left: 37px;
@@ -97,18 +117,21 @@
         color: var(--text);
         font-family: "Poppins", "Segoe UI", sans-serif;
         letter-spacing: -0.04em;
+        margin: 0;
+        line-height: 1;
       }
+
       .brand-tagline {
         display: flex;
         align-items: center;
         gap: 10px;
         color: var(--text-muted);
         font-size: 0.8rem;
-
         text-decoration: underline;
         text-underline-offset: 4px;
         letter-spacing: 0.01em;
       }
+
       .brand-tagline::before {
         content: "";
         width: 10px;
@@ -118,19 +141,19 @@
         display: inline-block;
         animation: blink 1.2s infinite ease-in-out;
       }
+
       @keyframes blink {
-        0%,
-        45%,
-        100% {
+        0%, 45%, 100% {
           opacity: 1;
           transform: scale(1);
         }
-        50%,
-        95% {
+        50%, 95% {
           opacity: 0.2;
           transform: scale(0.85);
         }
       }
+
+      /* ── NAVIGATION ── */
       .nav-links {
         display: flex;
         gap: 8px;
@@ -140,6 +163,7 @@
         border-radius: 999px;
         padding: 4px;
       }
+
       .nav-link {
         text-decoration: none;
         color: var(--text-muted);
@@ -149,10 +173,12 @@
         transition: all 0.2s ease;
         border: 1px solid transparent;
       }
+
       .nav-link:hover {
         color: var(--text);
         background: var(--tag-hover-bg);
       }
+
       .nav-link.active {
         background: var(--bg);
         color: var(--text);
@@ -160,23 +186,104 @@
         box-shadow: inset 0 0 0 1px var(--border);
       }
 
+      /* ── THEME TOGGLE ── */
       .theme-toggle {
         background: var(--toggle-bg);
         border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 6px 14px;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
         cursor: pointer;
-        font-size: 0.82rem;
         color: var(--toggle-color);
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: center;
         transition: all 0.2s;
+        flex-shrink: 0;
+        padding: 0;
       }
+
       .theme-toggle:hover {
         border-color: var(--card-hover-border);
       }
 
+      .theme-toggle svg {
+        display: block;
+      }
+
+      /* ── SEARCH BAR ── */
+      .search-wrap {
+        flex: 1;
+        max-width: 650px;
+        min-width: 200px;
+        margin-left: 6%;
+        display: flex;
+        align-items: center;
+        position: relative;
+      }
+
+      .search-wrap input {
+        width: 100%;
+        padding: 10px 16px 10px 40px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .search-wrap input::placeholder {
+        color: var(--text-faint);
+      }
+
+      .search-wrap input:focus {
+        border-color: var(--text-muted);
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+      }
+
+      [data-theme="dark"] .search-wrap input:focus {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-faint);
+        font-size: 0.9rem;
+        pointer-events: none;
+      }
+
+      .search-clear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-faint);
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 50%;
+        display: none;
+        transition: color 0.15s, background 0.15s;
+        line-height: 1;
+      }
+
+      .search-clear:hover {
+        color: var(--text);
+        background: var(--tag-hover-bg);
+      }
+
+      .search-clear.visible {
+        display: block;
+      }
+
+      /* ── LAYOUT ── */
       .layout {
         display: flex;
         gap: 32px;
@@ -186,7 +293,7 @@
         align-items: flex-start;
       }
 
-      /* SIDEBAR */
+      /* ── SIDEBAR ── */
       aside {
         width: 240px;
         flex-shrink: 0;
@@ -225,14 +332,17 @@
         justify-content: space-between;
         cursor: pointer;
       }
+
       .sidebar-toggle:hover {
         background: var(--tag-hover-bg);
       }
+
       .sidebar-toggle .arrow {
         transition: transform 0.2s;
         font-size: 0.7rem;
         color: var(--text-faint);
       }
+
       .sidebar-toggle.open .arrow {
         transform: rotate(180deg);
       }
@@ -240,9 +350,10 @@
       .sidebar-body {
         display: none;
         padding: 4px 12px 12px;
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 6px;
       }
+
       .sidebar-body.open {
         display: flex;
       }
@@ -253,6 +364,7 @@
         gap: 6px;
         padding: 4px 12px 12px;
       }
+
       .tags-wrap.open {
         display: flex;
       }
@@ -268,6 +380,7 @@
         text-align: left;
         transition: all 0.15s;
       }
+
       .filter-btn:hover,
       .filter-btn.active {
         border-color: var(--text);
@@ -285,6 +398,7 @@
         cursor: pointer;
         transition: all 0.15s;
       }
+
       .tag-filter:hover,
       .tag-filter.active {
         border-color: var(--text);
@@ -292,7 +406,7 @@
         background: var(--tag-hover-bg);
       }
 
-      /* MAIN */
+      /* ── MAIN CONTENT ── */
       .main-content {
         flex: 1;
         min-width: 0;
@@ -304,39 +418,114 @@
         justify-content: space-between;
         margin-bottom: 24px;
       }
+
       .content-header h2 {
         font-size: 1.8rem;
         font-weight: 700;
       }
+
       .post-count {
         color: var(--text-muted);
         font-size: 0.88rem;
         margin-top: 4px;
       }
 
-      /* GRID */
+      /* ── POST GRID ── */
       .grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 20px;
       }
-      @media (max-width: 1000px) {
-        .grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-      @media (max-width: 640px) {
-        .grid {
-          grid-template-columns: 1fr;
-        }
-        aside {
-          display: none;
-        }
-        .layout {
-          padding: 0 16px;
-        }
+
+      #status {
+        text-align: center;
+        color: var(--text-faint);
+        margin-top: 60px;
+        grid-column: 1/-1;
       }
 
+      /* ── SKELETON LOADER ── */
+      .sk {
+        position: relative;
+        overflow: hidden;
+        background: var(--tag-hover-bg);
+        border-radius: 6px;
+      }
+      .sk::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.5),
+          transparent
+        );
+        animation: shimmer 1.4s infinite;
+      }
+      [data-theme="dark"] .sk::after {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.07),
+          transparent
+        );
+      }
+      @keyframes shimmer {
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sk::after {
+          animation: none;
+        }
+      }
+      .skeleton-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .sk-image {
+        height: 160px;
+        border-radius: 0;
+      }
+      .skeleton-card-body {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .sk-line {
+        height: 14px;
+      }
+      .sk-card-title {
+        height: 16px;
+        width: 85%;
+      }
+      .sk-short {
+        width: 55%;
+      }
+      .sk-sm {
+        width: 40%;
+        height: 12px;
+      }
+      .sk-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .skeleton-card-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      /* ── CARDS ── */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -347,16 +536,15 @@
         display: flex;
         flex-direction: column;
         position: relative;
-        transition:
-          border-color 0.2s,
-          transform 0.2s,
-          box-shadow 0.2s;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       }
+
       .card:hover {
         border-color: var(--card-hover-border);
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
       }
+
       .card-lock {
         position: absolute;
         top: 10px;
@@ -371,6 +559,7 @@
         font-size: 0.8rem;
         z-index: 2;
       }
+
       .card-premium {
         position: absolute;
         top: 12px;
@@ -386,13 +575,14 @@
         place-items: center;
         z-index: 2;
       }
-      
+
       .card img {
         width: 100%;
         height: 160px;
         object-fit: cover;
         display: block;
       }
+
       .card-body {
         padding: 16px;
         flex: 1;
@@ -400,11 +590,13 @@
         flex-direction: column;
         gap: 8px;
       }
+
       .card-cats {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
       }
+
       .card-cat {
         border: 1px solid var(--tag-border);
         border-radius: 20px;
@@ -413,13 +605,19 @@
         color: var(--tag-color);
         background: transparent;
       }
+
       .card h3 {
         font-size: 0.95rem;
         font-weight: 600;
         line-height: 1.4;
         color: var(--text);
-        flex: 1;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
+
       .card p {
         font-size: 0.82rem;
         color: var(--text-muted);
@@ -429,6 +627,7 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
+
       .card-footer {
         display: flex;
         align-items: center;
@@ -437,11 +636,13 @@
         padding-top: 10px;
         border-top: 1px solid var(--footer-border);
       }
+
       .author {
         display: flex;
         align-items: center;
         gap: 8px;
       }
+
       .author-avatar {
         width: 26px;
         height: 26px;
@@ -455,47 +656,46 @@
         flex-shrink: 0;
         overflow: hidden;
       }
+
       .author-avatar img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
+
       .author-name {
         font-size: 0.78rem;
         color: var(--text-muted);
       }
+
       .card-meta {
         display: flex;
         align-items: center;
         gap: 8px;
       }
+
       .reading-time {
         font-size: 0.75rem;
         color: var(--text-muted);
       }
+
       .date-str {
         font-size: 0.75rem;
         color: var(--text-faint);
       }
 
-      #status {
-        text-align: center;
-        color: var(--text-faint);
-        margin-top: 60px;
-        grid-column: 1/-1;
+      /* ── APP SHELL ── */
+      .app-shell {
+        transition: opacity 0.2s ease, filter 0.2s ease;
       }
 
-      .app-shell {
-        transition:
-          opacity 0.2s ease,
-          filter 0.2s ease;
-      }
       .app-shell.dimmed {
         opacity: 0.35;
         filter: blur(1.5px);
         pointer-events: none;
       }
 
+      /* ── AUTH MODAL ── */
       .auth-modal {
         position: fixed;
         inset: 0;
@@ -507,9 +707,11 @@
         backdrop-filter: blur(6px);
         z-index: 1000;
       }
+
       .auth-modal.hidden {
         display: none;
       }
+
       .auth-card {
         width: min(100%, 420px);
         background: var(--surface);
@@ -518,16 +720,19 @@
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
         padding: 24px;
       }
+
       .auth-card h3 {
         font-size: 1.2rem;
         margin-bottom: 8px;
       }
+
       .auth-card p {
         color: var(--text-muted);
         font-size: 0.95rem;
         margin-bottom: 16px;
         line-height: 1.5;
       }
+
       .auth-card input {
         width: 100%;
         padding: 10px 12px;
@@ -535,21 +740,50 @@
         border: 1px solid var(--border);
         margin-bottom: 10px;
         font-size: 0.95rem;
+        background: var(--bg);
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
       }
+
+      .auth-card input:focus {
+        border-color: var(--text-muted);
+      }
+
       .auth-card button {
         width: 100%;
-        border: none;
+        border: 1px solid #111;
         border-radius: 10px;
-        background: #2563eb;
-        color: white;
+        background: #111;
+        color: #fff;
         padding: 10px 12px;
         font-weight: 600;
         cursor: pointer;
         margin-top: 4px;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
       }
+
       .auth-card button:hover {
-        background: #1d4ed8;
+        background: #262626;
+        border-color: #262626;
       }
+
+      .auth-card button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      [data-theme="dark"] .auth-card button {
+        background: #fff;
+        color: #111;
+        border-color: #fff;
+      }
+
+      [data-theme="dark"] .auth-card button:hover {
+        background: #e8e8e8;
+        border-color: #e8e8e8;
+      }
+
       .auth-card .secondary {
         margin-top: 10px;
         text-align: center;
@@ -557,29 +791,197 @@
         font-size: 0.9rem;
         cursor: pointer;
       }
+
       .auth-status {
         min-height: 20px;
         margin-top: 10px;
         color: #dc2626;
         font-size: 0.9rem;
       }
+
+      /* ── RESPONSIVE ── */
+      @media (max-width: 1100px) {
+        header {
+          flex-wrap: wrap;
+          padding: 14px 20px;
+          gap: 12px;
+        }
+
+        .search-wrap {
+          max-width: 100%;
+          flex: 1 1 100%;
+          margin-left: 0;
+        }
+
+        .header-left {
+          flex-wrap: wrap;
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        header {
+          padding: 12px 14px;
+        }
+
+        .header-left {
+          flex-wrap: wrap;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        aside {
+          display: none;
+        }
+
+        .layout {
+          padding: 0 16px;
+        }
+      }
+    
+      /* ── ABOUT ICON ── */
+      .about-toggle {
+        background: var(--toggle-bg);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        color: var(--toggle-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        padding: 0;
+        position: relative;
+      }
+
+      .about-toggle:hover { border-color: var(--card-hover-border); }
+      .about-toggle svg { display: block; }
+      .about-toggle.active {
+        border-color: var(--text);
+        color: var(--text);
+        background: var(--tag-hover-bg);
+      }
+
+      /* ── NOTIFICATION TOGGLE (consistent with about/theme buttons) ── */
+      .notif-toggle {
+        background: var(--toggle-bg);
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        color: var(--toggle-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        padding: 0;
+        position: relative;
+      }
+
+      .notif-toggle:hover { border-color: var(--card-hover-border); }
+      .notif-toggle svg { display: block; }
+
+      /* ── DOCUMENTATION VIEW ── */
+      .doc-view {
+        position: fixed;
+        inset: 0;
+        z-index: 400;
+        background: var(--surface);
+        display: none;
+      }
+
+      .doc-view.open { display: block; }
+
+      .doc-view-close {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 401;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 50%;
+        width: 38px;
+        height: 38px;
+        cursor: pointer;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        padding: 0;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(4px);
+      }
+
+      .doc-view-close:hover { border-color: var(--card-hover-border); background: #fff; }
+
+      .doc-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: #fff;
+        display: block;
+      }
     </style>
+
   </head>
+
   <body>
     <div class="app-shell" id="app-shell">
       <header>
         <div class="header-left">
           <div class="brand-block">
-            <h1>Anubhav</h1>
+            <h1><a href="/" style="color: inherit; text-decoration: none;">Anubhav</a></h1>
             <p class="brand-tagline"><i>Lived, Learned, Documented</i></p>
           </div>
           <nav class="nav-links">
-            <a class="nav-link active" href="index.html">Blog</a>
-            <a class="nav-link" href="journal.html">Journal</a>
+            <a class="nav-link active" href="/index.html">Blog</a>
+            <a class="nav-link" href="/journal.html">Journal</a>
+            <a class="nav-link" href="/footage.html">Footage</a>
           </nav>
+          <div class="search-wrap" role="search">
+            <span class="search-icon">🔍</span>
+            <input
+              id="search-input"
+              type="search"
+              placeholder="Search posts by title, category, or tag…"
+              autocomplete="off"
+              aria-label="Search posts"
+            />
+            <button
+              class="search-clear"
+              id="search-clear"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          </div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">
-          🌙 Dark
+
+        <button class="about-toggle" id="about-btn" aria-label="About and documentation" title="Project Documentation">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
+        <button class="notif-toggle" id="notif-btn" aria-label="Notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" aria-label="Toggle theme">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
         </button>
       </header>
 
@@ -613,11 +1015,1211 @@
             </div>
           </div>
           <div class="grid" id="posts">
-            <!-- <p id="status">Loading posts...</p> -->
+            <!-- SEO_STATIC_POST_LINKS_START -->
+            <a class="card seo-static-post" href="/blog/discovering-hidden-charm-of-mountain-travel"><div class="card-premium" title="Premium post">★</div><img src="https://cdn.sanity.io/images/xsd8o1za/production/20e4d303446c1c127030b772687b4ff7a43a4113-1400x933.png?auto=format&fit=max&w=600&q=70" alt="Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List" loading="lazy" decoding="async" /><div class="card-body"><div class="card-cats"><span class="card-cat">Travel</span><span class="card-cat">Sanity</span></div><h3>Why Mountain Travel Should Be on Every Traveler&#039;s Bucket List</h3><p>Sanity is the ability to think clearly, stay emotionally balanced, and respond rationally to life’s challenges. Maintaining it is key to leading a calm, healthy, and stable life.</p><div class="card-footer"><div class="author"><div class="author-avatar"><img src="https://cdn.sanity.io/images/xsd8o1za/production/e064443c8ef9c55ba4bfa190b1ad62628a2b7256-404x495.png" alt="Ajeet Thapa" /></div><span class="author-name">Ajeet Thapa</span></div><div class="card-meta"><span class="reading-time">⏱ 7 min</span><span class="date-str">📅 July 17, 2026</span></div></div></div></a>
+            <a class="card seo-static-post" href="/blog/8-month-design-journey"><img src="https://cdn.sanity.io/images/xsd8o1za/production/cdd1d3538a9e4eba00a963d8a52ab6fe46e1e522-751x423.png?auto=format&fit=max&w=600&q=70" alt="5 Lessons From My 8-Month Design Journey" loading="lazy" decoding="async" /><div class="card-body"><div class="card-cats"><span class="card-cat">Career Journey</span><span class="card-cat">Design</span></div><h3>5 Lessons From My 8-Month Design Journey</h3><p>Eight months of learning design taught me that growth isn&#039;t just about improving your skills—it&#039;s about learning through mistakes, building consistency, staying curious, and understanding how far you can go when you keep showing up.</p><div class="card-footer"><div class="author"><div class="author-avatar"><img src="https://cdn.sanity.io/images/xsd8o1za/production/e064443c8ef9c55ba4bfa190b1ad62628a2b7256-404x495.png" alt="Ajeet Thapa" /></div><span class="author-name">Ajeet Thapa</span></div><div class="card-meta"><span class="reading-time">⏱ 4 min</span><span class="date-str">📅 August 6, 2026</span></div></div></div></a>
+            <a class="card seo-static-post" href="/blog/understanding-sanity-importance-maintain"><div class="card-premium" title="Premium post">★</div><img src="https://cdn.sanity.io/images/xsd8o1za/production/9b320188aae2d3b0ca4364a1e1b7c7788fc78603-265x190.jpg?auto=format&fit=max&w=600&q=70" alt="Understanding Sanity: Meaning, Importance &amp; How to Maintain It" loading="lazy" decoding="async" /><div class="card-body"><div class="card-cats"><span class="card-cat">Sanity</span></div><h3>Understanding Sanity: Meaning, Importance &amp; How to Maintain It</h3><p>Sanity is the ability to think clearly, stay emotionally balanced, and respond rationally to life’s challenges. Maintaining it is key to leading a calm, healthy, and stable life.</p><div class="card-footer"><div class="author"><div class="author-avatar"><img src="https://cdn.sanity.io/images/xsd8o1za/production/e064443c8ef9c55ba4bfa190b1ad62628a2b7256-404x495.png" alt="Ajeet Thapa" /></div><span class="author-name">Ajeet Thapa</span></div><div class="card-meta"><span class="reading-time">⏱ 4 min</span><span class="date-str">📅 June 28, 2026</span></div></div></div></a>
+            <!-- SEO_STATIC_POST_LINKS_END -->
           </div>
         </div>
       </div>
     </div>
+
+    <div id="doc-view" class="doc-view" aria-hidden="true">
+      <button class="doc-view-close" id="doc-close" aria-label="Close documentation">✕</button>
+      <iframe class="doc-frame" id="doc-frame" title="Anubhav Project Documentation"></iframe>
+    </div>
+
+    <template id="doc-template">
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anubhav — Project Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --accent: #6366f1;
+      --accent-soft: #eef2ff;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --section-gap: 3rem;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Print Styles ── */
+    @media print {
+      body { font-size: 12px; line-height: 1.6; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .cover-page { page-break-after: always; }
+      section { page-break-inside: avoid; }
+      pre { white-space: pre-wrap; word-break: break-all; }
+      .toc-container { page-break-after: always; }
+      img { max-width: 100% !important; }
+    }
+
+    /* ── Cover Page ── */
+    .cover-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+      color: #ffffff;
+      padding: 4rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover-page::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 30% 70%, rgba(99,102,241,0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 30%, rgba(139,92,246,0.1) 0%, transparent 50%);
+      animation: float 15s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-2%, 2%); }
+    }
+
+    .cover-content { position: relative; z-index: 1; }
+
+    .cover-devanagari {
+      font-size: 4.5rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #d4a574;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 20px rgba(212,165,116,0.3);
+    }
+
+    .cover-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #ffffff, #c7d2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cover-subtitle {
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #a5b4fc;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+    }
+
+    .cover-divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #d4a574, transparent);
+      margin: 0 auto 2.5rem;
+    }
+
+    .cover-tagline {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1.3rem;
+      color: #c7d2fe;
+      margin-bottom: 3rem;
+    }
+
+    .cover-meta {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 2;
+    }
+
+    .cover-meta strong { color: #cbd5e1; }
+
+    /* ── Container ── */
+    .doc-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* ── Table of Contents ── */
+    .toc-container {
+      margin-bottom: var(--section-gap);
+    }
+
+    .toc-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.5rem;
+    }
+
+    .toc-list {
+      list-style: none;
+      counter-reset: toc;
+    }
+
+    .toc-list li {
+      counter-increment: toc;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toc-list li::before {
+      content: counter(toc, decimal-leading-zero) ".";
+      font-weight: 700;
+      color: var(--accent);
+      margin-right: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .toc-list a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .toc-list a:hover { color: var(--accent); }
+
+    .toc-sub {
+      list-style: none;
+      padding-left: 2.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .toc-sub li { border-bottom: none; padding: 0.2rem 0; }
+    .toc-sub li::before { content: "—"; color: var(--text-muted); }
+    .toc-sub a { font-weight: 400; color: var(--text-muted); font-size: 0.9rem; }
+
+    /* ── Section Headings ── */
+    .section-heading {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-heading .num {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      min-width: 2rem;
+      text-align: center;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    /* ── Content Elements ── */
+    p {
+      margin-bottom: 1rem;
+      color: var(--text);
+      text-align: justify;
+    }
+
+    /* ── Boxed content: keep aligned, never justified ── */
+    .cover-page p { text-align: center; }      /* cover keeps its centered design */
+    .feature-card p { text-align: left; }      /* feature card descriptions */
+    .callout p { text-align: left; }           /* callout box text */
+    .visual-container p { text-align: left; }  /* visual/caption boxes */
+    .doc-footer p { text-align: center; }      /* footer keeps its centered design */
+
+    .muted { color: var(--text-muted); }
+
+    .visual-container {
+      margin: 1.5rem 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .visual-container img {
+      width: 100%;
+      display: block;
+    }
+
+    .visual-caption {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      background: var(--surface);
+      font-style: italic;
+    }
+
+    /* ── Callout Boxes ── */
+    .callout {
+      border-left: 4px solid;
+      padding: 1rem 1.25rem;
+      margin: 1.25rem 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.93rem;
+    }
+
+    .callout-info {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .callout-tip {
+      border-color: #22c55e;
+      background: #f0fdf4;
+    }
+
+    .callout-warning {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    /* ── Code Blocks ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem 1.5rem;
+      border-radius: 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: 'Fira Code', monospace;
+      background: var(--surface);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.88em;
+      border: 1px solid var(--border);
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      border: none;
+      font-size: inherit;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    tr:nth-child(even) { background: var(--surface); }
+
+    /* ── Feature Cards ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      transition: box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card h4 {
+      margin: 0 0 0.3rem;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .feature-card p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* ── Tech Stack Badges ── */
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .badge-primary { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .badge-green { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
+    .badge-orange { border-color: #ea580c; color: #ea580c; background: #fff7ed; }
+    .badge-blue { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+
+    /* ── Horizontal Rule ── */
+    hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: var(--section-gap) 0;
+    }
+
+    /* ── Lists ── */
+    ul, ol {
+      margin: 0.75rem 0 1rem 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      text-align: justify;
+    }
+
+    /* TOC navigation stays left-aligned (boxed navigation, not content) */
+    .toc-list li,
+    .toc-sub li { text-align: left; }
+
+    /* ── File Tree ── */
+    .file-tree {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.25rem 1.5rem;
+      border-radius: 10px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      margin: 1rem 0;
+    }
+
+    .file-tree .folder { color: #60a5fa; }
+    .file-tree .file { color: #a5b4fc; }
+    .file-tree .comment { color: #64748b; }
+
+    /* ── Spacing ── */
+    section { margin-bottom: var(--section-gap); }
+
+    /* ── Footer ── */
+    .doc-footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COVER PAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="cover-page">
+  <div class="cover-content">
+    <div class="cover-devanagari">अनुभव</div>
+    <h1 class="cover-title">Anubhav</h1>
+    <p class="cover-subtitle">Lived · Learned · Documented</p>
+    <div class="cover-divider"></div>
+    <p class="cover-tagline">"Thoughts, knowledge and journeys — documented."</p>
+    <div class="cover-meta">
+      <strong>Project Documentation</strong><br />
+      A Headless Blog Platform by Ajeet Thapa<br /><br />
+      Version 1.0 &nbsp;·&nbsp; August 2026
+    </div>
+  </div>
+</div>
+
+<div class="doc-container">
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="toc-container page-break">
+  <h2 class="toc-title">Table of Contents</h2>
+  <ol class="toc-list">
+    <li>
+      <a href="#meaning">अनुभव — The Name &amp; Its Meaning</a>
+      <ul class="toc-sub">
+        <li><a href="#nepali-meaning">Meaning in Nepali &amp; Historical Roots</a></li>
+        <li><a href="#why-anubhav">Why We Named It Anubhav</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#what-is">What Is Anubhav?</a>
+      <ul class="toc-sub">
+        <li><a href="#what-expect">What You Can Expect to See</a></li>
+      </ul>
+    </li>
+    <li><a href="#prerequisites">Prerequisites</a></li>
+    <li><a href="#features">Features</a></li>
+    <li>
+      <a href="#frontend">Frontend Architecture</a>
+      <ul class="toc-sub">
+        <li><a href="#fe-static">Static HTML &amp; Vanilla JavaScript</a></li>
+        <li><a href="#fe-groq">Content Fetching — GROQ Queries</a></li>
+        <li><a href="#fe-theming">Theming — Dark &amp; Light Mode</a></li>
+        <li><a href="#fe-pwa">Progressive Web App (PWA)</a></li>
+        <li><a href="#fe-auth">Firebase Authentication</a></li>
+        <li><a href="#fe-notifications">Push Notifications (Bell UI)</a></li>
+        <li><a href="#fe-seo">SEO — Dynamic Open Graph Tags</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#backend">Backend Architecture (Express + MongoDB)</a>
+      <ul class="toc-sub">
+        <li><a href="#be-khalti">Khalti Payment Integration</a></li>
+        <li><a href="#be-reviews">Review &amp; Feedback System</a></li>
+        <li><a href="#be-fcm">Push Notification Engine (FCM)</a></li>
+        <li><a href="#be-webhook">Webhook Signature Verification</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#sanity">Sanity Backend (CMS)</a>
+      <ul class="toc-sub">
+        <li><a href="#san-headless">What Is a Headless CMS?</a></li>
+        <li><a href="#san-schemas">Content Schemas</a></li>
+        <li><a href="#san-studio">Sanity Studio</a></li>
+      </ul>
+    </li>
+    <li><a href="#project-structure">Project Structure</a></li>
+    <li><a href="#api-endpoints">API Endpoints Reference</a></li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     1. THE NAME & MEANING
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="meaning" class="page-break">
+  <h2 class="section-heading"><span class="num">01</span> अनुभव — The Name &amp; Its Meaning</h2>
+
+  <div class="visual-container">
+    <img src="documentation/images/anubhav_meaning.png" alt="Anubhav — अनुभव meaning visual" />
+    <div class="visual-caption">Fig 1 — अनुभव: The Nepali/Sanskrit word for "Experience"</div>
+  </div>
+
+  <h3 id="nepali-meaning">Meaning in Nepali &amp; Historical Roots</h3>
+
+  <p>
+    <strong>अनुभव (Anubhav)</strong> is a Nepali and Sanskrit word that directly translates to <strong>"experience"</strong>. 
+    It derives from two Sanskrit roots:
+  </p>
+  <ul>
+    <li><strong>अनु (anu)</strong> — "along, following, after"</li>
+    <li><strong>भव (bhav)</strong> — "becoming, existence, feeling"</li>
+  </ul>
+  <p>
+    Together, <em>anubhav</em> means <strong>"that which follows from living"</strong> — the perception, wisdom, and understanding 
+    that a person gains through direct experience of the world.
+  </p>
+  <p>
+    In Nepali culture and literature, अनुभव carries a weight far beyond casual meaning. It refers to 
+    <strong>first-hand, lived knowledge</strong> — not something read in textbooks, but something <em>felt</em>, 
+    <em>endured</em>, and ultimately <em>understood</em> through one's own journey. The great Nepali poets and thinkers 
+    have long valued अनुभव as the most authentic form of wisdom — the kind that only comes from walking the path yourself.
+  </p>
+
+  <div class="callout callout-info">
+    <strong>📜 Historical Note</strong>
+    In classical Sanskrit philosophy, <em>anubhava</em> (अनुभव) is one of the <strong>pramāṇas</strong> — valid means of knowledge. 
+    It refers specifically to <em>pratyakṣa</em> (direct perception), making it the most intimate and undeniable form of knowing. 
+    This philosophical depth is exactly what this project captures.
+  </div>
+
+  <h3 id="why-anubhav">Why We Named It Anubhav</h3>
+
+  <p>
+    This blog is not just a technical platform — it is a <strong>personal documentation of experiences</strong>. 
+    Every article, every journal entry, every piece of content published here represents something <em>lived and learned</em>.
+  </p>
+  <p>The name aligns with the project's identity in three key ways:</p>
+  <ul>
+    <li>
+      <strong>Lived (जिइएको)</strong> — The content comes from real experiences, not hypothetical ideas. 
+      Each post documents something the author has personally encountered.
+    </li>
+    <li>
+      <strong>Learned (सिकेको)</strong> — Knowledge is distilled from those experiences. 
+      Technical tutorials, personal reflections, and insights all originate from genuine learning.
+    </li>
+    <li>
+      <strong>Documented (लेखिएको)</strong> — Anubhav gives those experiences a permanent home. 
+      The blog preserves them so others can learn from them too.
+    </li>
+  </ul>
+  <p>
+    The tagline, <em>"Lived, Learned, Documented"</em>, captures this perfectly. <strong>Anubhav</strong> 
+    is not a random brand name — it is a Nepali word that describes exactly what this platform does: 
+    it turns lived experiences into shared knowledge.
+  </p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     2. WHAT IS ANUBHAV?
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="what-is" class="page-break">
+  <h2 class="section-heading"><span class="num">02</span> What Is Anubhav?</h2>
+
+  <p>
+    <strong>Anubhav</strong> is a modern, full-featured <strong>headless blog platform</strong> built for personal blogging, 
+    journal writing, and premium content publishing. It combines a powerful content management backend 
+    with a lightweight, fast frontend to deliver a reading experience that feels native and premium.
+  </p>
+
+  <div class="visual-container">
+    <img src="documentation/images/architecture_diagram.png" alt="Anubhav Architecture Diagram" />
+    <div class="visual-caption">Fig 2 — High-level architecture: Sanity CMS → Express API → Static Frontend</div>
+  </div>
+
+  <p>Anubhav is a <strong>three-layer system</strong>:</p>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Role</th></tr>
+    <tr><td>Content Source</td><td>Sanity Studio (Headless CMS)</td><td>Write, organize, and publish all content</td></tr>
+    <tr><td>API Server</td><td>Express.js + MongoDB</td><td>Handle payments, reviews, push notifications, and auth</td></tr>
+    <tr><td>Frontend</td><td>Static HTML/CSS/JS (PWA)</td><td>Render content, search, filter, and display posts</td></tr>
+  </table>
+
+  <h3 id="what-expect">What You Can Expect to See in Anubhav</h3>
+  <ol>
+    <li>A clean, minimal blog feed with categorized and tagged posts</li>
+    <li>A personal <strong>Journal</strong> section for reflective entries</li>
+    <li><strong>Premium</strong> posts gated behind Khalti payments (Nepal's payment gateway)</li>
+    <li><strong>Private</strong> posts accessible only to authenticated users</li>
+    <li><strong>Push notifications</strong> — get notified the moment a new post drops</li>
+    <li><strong>Dark &amp; Light mode</strong> with persistent preference</li>
+    <li><strong>Real-time search</strong> across titles, excerpts, tags, and categories</li>
+    <li><strong>Reviews &amp; Feedback</strong> system per post with version history</li>
+    <li><strong>Installable as an app</strong> (PWA) — works offline too</li>
+    <li><strong>Rich link previews</strong> when shared on social media (dynamic OG tags)</li>
+  </ol>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     3. PREREQUISITES
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="prerequisites" class="page-break">
+  <h2 class="section-heading"><span class="num">03</span> Prerequisites</h2>
+
+  <p>Before running Anubhav locally, ensure you have the following tools and accounts set up:</p>
+
+  <table>
+    <tr><th>Requirement</th><th>Purpose</th><th>Install / Sign Up</th></tr>
+    <tr><td>Node.js (v18+)</td><td>Runs the Express server and Sanity CLI</td><td><code>nodejs.org</code></td></tr>
+    <tr><td>npm</td><td>Installs JavaScript dependencies</td><td>Bundled with Node.js</td></tr>
+    <tr><td>MongoDB Atlas</td><td>Cloud database for payments, reviews, subscriptions</td><td><code>mongodb.com/atlas</code></td></tr>
+    <tr><td>Sanity Account</td><td>Content management system</td><td><code>sanity.io</code></td></tr>
+    <tr><td>Firebase Project</td><td>Authentication + Push Notifications (FCM)</td><td><code>console.firebase.google.com</code></td></tr>
+    <tr><td>Khalti Merchant Account</td><td>Payment processing (Nepal)</td><td><code>khalti.com</code></td></tr>
+  </table>
+
+  <div class="callout callout-warning">
+    <strong>⚠️ Environment Variables</strong>
+    All secrets (database URI, API keys, Firebase private key) are stored in <code>Backend/.env</code>. 
+    A <code>.env.example</code> template is provided. <strong>Never commit the <code>.env</code> file</strong> to version control.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     4. FEATURES
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="features" class="page-break">
+  <h2 class="section-heading"><span class="num">04</span> Features</h2>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📝</div>
+      <h4>Headless CMS Publishing</h4>
+      <p>Write in Sanity Studio with a rich text editor. Content is delivered via API — no page rebuilds needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💰</div>
+      <h4>Khalti Payment Gateway</h4>
+      <p>Premium posts are monetized through Nepal's Khalti e-payment. Server-verified subscriptions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <h4>Real-Time Push Notifications</h4>
+      <p>Sanity webhook → Express server → Firebase Cloud Messaging → browser notification. Fully automated.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h4>Firebase Authentication</h4>
+      <p>Private posts are gated behind Firebase email/password login. Tokens are verified server-side.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h4>Progressive Web App</h4>
+      <p>Install Anubhav on your phone or desktop. Service worker caches pages for offline reading.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌓</div>
+      <h4>Dark &amp; Light Mode</h4>
+      <p>CSS custom properties switch the entire theme. Preference saved in <code>localStorage</code>.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <h4>Client-Side Search &amp; Filtering</h4>
+      <p>Instant search across titles, excerpts, tags, and categories — no server roundtrip needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h4>Reviews &amp; Version History</h4>
+      <p>Per-post ratings and feedback stored in MongoDB. Updated reviews preserve a version trail.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h4>Dynamic SEO &amp; Social Previews</h4>
+      <p>Server-side injects Open Graph meta tags per post so shared links show rich previews.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     5. FRONTEND ARCHITECTURE
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="frontend" class="page-break">
+  <h2 class="section-heading"><span class="num">05</span> Frontend Architecture</h2>
+
+  <p>
+    The frontend is deliberately <strong>framework-free</strong>. It uses plain HTML files, vanilla CSS, and native JavaScript. 
+    This is a conscious architectural choice — no React, no Vue, no build step. The result is a 
+    <strong>zero-dependency, instantly-loading</strong> frontend that anyone can understand and modify.
+  </p>
+
+  <div class="tech-badges">
+    <span class="badge badge-orange">HTML5</span>
+    <span class="badge badge-blue">CSS3 Custom Properties</span>
+    <span class="badge badge-primary">Vanilla JavaScript (ES Modules)</span>
+    <span class="badge badge-green">Service Worker (PWA)</span>
+  </div>
+
+  <h3 id="fe-static">Static HTML &amp; Vanilla JavaScript</h3>
+  <p>The frontend consists of four standalone HTML pages:</p>
+  <table>
+    <tr><th>Page</th><th>Purpose</th></tr>
+    <tr><td><code>index.html</code></td><td>Blog home — lists all blog and premium posts with search, categories, and tags</td></tr>
+    <tr><td><code>journal.html</code></td><td>Journal section — displays personal journal-type entries</td></tr>
+    <tr><td><code>post.html</code></td><td>Single post view — fetches content by <code>slug</code> query parameter from Sanity</td></tr>
+    <tr><td><code>login.html</code></td><td>Firebase email/password authentication portal</td></tr>
+  </table>
+
+  <p>
+    Each page is <strong>self-contained</strong> — it includes its own styles and scripts inline. The JavaScript 
+    fetches content directly from Sanity's public CDN API at runtime, so the HTML files themselves are static 
+    and can be served from any CDN or static host.
+  </p>
+
+  <h3 id="fe-groq">Content Fetching — GROQ Queries</h3>
+  <p>
+    Sanity uses a query language called <strong>GROQ</strong> (Graph-Relational Object Queries). 
+    Instead of REST endpoints with fixed responses, GROQ lets the frontend ask for <em>exactly the data it needs</em> — 
+    similar to GraphQL, but purpose-built for document-based content.
+  </p>
+
+  <div class="callout callout-info">
+    <strong>💡 What is GROQ?</strong>
+    GROQ is Sanity's open-source query language. It lets you filter, project, and join documents 
+    in a single query — without needing a backend to transform the data. Think of it as SQL for JSON documents.
+  </div>
+
+  <p>For example, the homepage fetches all blog and premium posts with this GROQ query:</p>
+  <pre><code>*[_type == "post" && (!defined(postType) || postType in ["blog", "premium"])] {
+  _id, title, slug, publishedAt, excerpt, readingTime,
+  isPrivate, isPremium, postType,
+  "authorName": author->name,
+  "authorImage": author->image.asset->url,
+  "imageUrl": mainImage.asset->url,
+  "categories": categories[]->title,
+  tags
+} | order(_createdAt desc)</code></pre>
+
+  <p>
+    This single query fetches posts, resolves author references, extracts image URLs, and sorts by date — all 
+    in one HTTP request to Sanity's CDN. No backend processing required.
+  </p>
+
+  <h3 id="fe-theming">Theming — Dark &amp; Light Mode</h3>
+  <p>
+    The entire theme system is built with <strong>CSS Custom Properties</strong> (CSS variables). 
+    A single <code>data-theme</code> attribute on the <code>&lt;html&gt;</code> element switches 
+    every color in the interface.
+  </p>
+  <pre><code>/* Light theme (default) */
+:root {
+  --bg: #f9f9f9;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --text: #e8e8e8;
+}</code></pre>
+  <p>
+    The user's preference is saved in <code>localStorage</code> under the key <code>"theme"</code>, 
+    so it persists across sessions without any backend involvement.
+  </p>
+
+  <h3 id="fe-pwa">Progressive Web App (PWA)</h3>
+
+  <div class="callout callout-tip">
+    <strong>🔧 What is a PWA?</strong>
+    A Progressive Web App is a website that behaves like a native app. It can be installed on the 
+    home screen, works offline through a Service Worker, and receives push notifications — all 
+    without an app store.
+  </div>
+
+  <p>Anubhav is a fully installable PWA. The three components that enable this:</p>
+  <ol>
+    <li><strong><code>manifest.json</code></strong> — Declares the app's name, icons, theme color, and display mode (<code>standalone</code>)</li>
+    <li><strong><code>firebase-messaging-sw.js</code></strong> — The unified Service Worker that handles both offline caching and FCM push notifications</li>
+    <li><strong>HTTPS</strong> — Required by browsers for Service Worker registration</li>
+  </ol>
+  <p>
+    The Service Worker uses a <strong>"network-first"</strong> caching strategy: it tries to fetch from the network, 
+    and if that fails (offline), it serves the cached version. This ensures users always see the latest content 
+    when online, but can still browse previously loaded pages when offline.
+  </p>
+
+  <h3 id="fe-auth">Firebase Authentication</h3>
+  <p>
+    Private posts require authentication via <strong>Firebase Auth</strong> (email/password sign-in). 
+    The Firebase SDK is <strong>self-hosted</strong> in the <code>vendor/</code> folder rather than loaded from 
+    Google's CDN (<code>gstatic.com</code>), because privacy browsers like Brave and Edge block third-party 
+    tracking domains — which would silently break login.
+  </p>
+  <p>
+    When a user clicks a private post card, an inline authentication modal appears. Upon successful sign-in, 
+    the Firebase ID token is stored in <code>localStorage</code> with a 1-hour expiry. This token is also 
+    sent as a Bearer header when subscribing to push notifications, so the server can link the device to the user.
+  </p>
+
+  <h3 id="fe-notifications">Push Notifications — Bell UI</h3>
+  <p>
+    The notification bell (🔔) in the header opens a popup with a single "Enable Notifications" button. 
+    <strong>No login is required</strong> — any visitor can subscribe their device. The flow:
+  </p>
+  <ol>
+    <li>User clicks the bell → popup appears (no browser permission prompt yet)</li>
+    <li>User clicks "Enable Notifications" → browser requests permission</li>
+    <li>On grant → FCM registers this browser and returns a <strong>device token</strong></li>
+    <li>The token is sent to the Express server (<code>POST /api/notifications/subscribe</code>)</li>
+    <li>Server stores the token in MongoDB</li>
+  </ol>
+  <p>
+    The system also handles edge cases: iOS requires the site to be installed as a PWA (iOS 16.4+), 
+    Firefox is not supported by FCM web push, and in-app browsers (Instagram, WhatsApp) are detected 
+    and the user is guided to open in a real browser.
+  </p>
+
+  <h3 id="fe-seo">SEO — Dynamic Open Graph Meta Tags</h3>
+  <p>
+    When a post link is shared on social media, the Express server intercepts the request to <code>post.html</code>, 
+    fetches the post's title, excerpt, and image from Sanity, and <strong>dynamically injects</strong> the 
+    correct Open Graph meta tags before serving the HTML. This is known as <strong>server-side rendering for crawlers</strong>.
+  </p>
+  <p>
+    Regular users get the same static <code>post.html</code> with client-side rendering, but social media 
+    crawlers (Facebook, Twitter, LinkedIn) see fully populated meta tags — giving rich link previews 
+    with the post's title, description, and cover image.
+  </p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     6. BACKEND ARCHITECTURE
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="backend" class="page-break">
+  <h2 class="section-heading"><span class="num">06</span> Backend Architecture (Express + MongoDB)</h2>
+
+  <p>
+    The backend is a single <strong>Express.js</strong> server (<code>server.js</code>) that handles everything 
+    the static frontend cannot: payment processing, review storage, push notification broadcasting, and dynamic 
+    meta tag injection. It connects to <strong>MongoDB</strong> (via Mongoose ODM) for data persistence.
+  </p>
+
+  <div class="tech-badges">
+    <span class="badge badge-green">Express.js v4</span>
+    <span class="badge badge-primary">MongoDB + Mongoose</span>
+    <span class="badge badge-orange">Firebase Admin SDK v14</span>
+    <span class="badge badge-blue">Node.js Crypto (HMAC)</span>
+  </div>
+
+  <p>The server also serves the static frontend files, so a single deployment hosts both the API and the website.</p>
+
+  <h3 id="be-khalti">Khalti Payment Integration</h3>
+
+  <div class="visual-container">
+    <img src="documentation/images/payment_flow.png" alt="Khalti Payment Flow" />
+    <div class="visual-caption">Fig 3 — Premium subscription payment flow via Khalti</div>
+  </div>
+
+  <p>
+    <strong>Khalti</strong> is Nepal's popular digital payment gateway. Anubhav uses it to monetize premium posts. 
+    The integration follows a standard <strong>redirect-based payment flow</strong>:
+  </p>
+
+  <ol>
+    <li><strong>Initiate</strong> — Frontend sends <code>POST /api/payment/initiate</code> with the user's email and amount</li>
+    <li><strong>Redirect</strong> — Server creates a Khalti payment session and returns a <code>payment_url</code></li>
+    <li><strong>Pay</strong> — User is redirected to Khalti's checkout page to complete payment</li>
+    <li><strong>Callback</strong> — Khalti redirects back to <code>GET /api/payment/callback?pidx=…</code></li>
+    <li><strong>Verify</strong> — Server calls Khalti's lookup API to confirm the payment is genuine</li>
+    <li><strong>Activate</strong> — On success, the subscription is marked active in MongoDB</li>
+  </ol>
+
+  <div class="callout callout-warning">
+    <strong>🔒 Security</strong>
+    The Khalti secret key stays on the server. Payment verification uses Khalti's server-to-server lookup API — 
+    the client never handles payment confirmation directly.
+  </div>
+
+  <h3 id="be-reviews">Review &amp; Feedback System</h3>
+  <p>
+    Each post can receive star ratings (1–5) and text feedback. Reviews are identified by <code>name + slug</code> 
+    combination. When a review is updated, the old version is archived in a <code>ReviewHistory</code> collection 
+    with a version number — this is a simple implementation of <strong>event sourcing</strong>, preserving an 
+    audit trail of every change.
+  </p>
+
+  <h3 id="be-fcm">Push Notification Engine (Firebase Cloud Messaging)</h3>
+
+  <div class="visual-container">
+    <img src="documentation/images/notification_flow.png" alt="Push Notification Flow" />
+    <div class="visual-caption">Fig 4 — End-to-end push notification flow from publish to browser alert</div>
+  </div>
+
+  <p>
+    When a new post is published in Sanity, the entire notification chain fires automatically:
+  </p>
+  <ol>
+    <li>Sanity fires a <strong>webhook</strong> (HTTP POST) to the Express server</li>
+    <li>Server verifies the webhook's <strong>HMAC-SHA256 signature</strong></li>
+    <li>Server queries MongoDB for all active FCM device tokens</li>
+    <li>Server sends a push message to each device via <strong>Firebase Admin SDK</strong></li>
+    <li>Browser's Service Worker receives the message and shows a native notification</li>
+    <li>Clicking the notification opens <code>/slug</code> for that post</li>
+  </ol>
+
+  <p>
+    Draft saves are filtered out server-side (documents with IDs starting with <code>drafts.</code>) so 
+    subscribers are only notified when a post is actually published.
+  </p>
+
+  <h3 id="be-webhook">Webhook Signature Verification</h3>
+
+  <div class="callout callout-info">
+    <strong>💡 What is HMAC-SHA256?</strong>
+    HMAC (Hash-based Message Authentication Code) is a way to verify both the <em>integrity</em> and 
+    <em>authenticity</em> of a message. The sender and receiver share a secret key. The sender hashes 
+    the message with the key and attaches the hash. The receiver re-computes the hash and compares — 
+    if they match, the message is genuine and untampered.
+  </div>
+
+  <p>
+    Sanity signs every webhook request with <code>sanity-webhook-signature: t=&lt;timestamp&gt;,v1=&lt;hmac&gt;</code>. 
+    The server:
+  </p>
+  <ol>
+    <li>Extracts the timestamp and signature from the header</li>
+    <li>Rejects stale signatures (5-minute window for replay protection)</li>
+    <li>Recomputes <code>HMAC-SHA256(secret, timestamp + "." + rawBody)</code></li>
+    <li>Compares using <code>crypto.timingSafeEqual()</code> to prevent timing attacks</li>
+  </ol>
+  <p>
+    This ensures that only Sanity — with the matching <code>SANITY_WEBHOOK_SECRET</code> — can trigger 
+    notifications. A malicious party cannot forge a valid webhook request without the secret.
+  </p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     7. SANITY BACKEND (CMS)
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="sanity" class="page-break">
+  <h2 class="section-heading"><span class="num">07</span> Sanity Backend (CMS)</h2>
+
+  <h3 id="san-headless">What Is a Headless CMS?</h3>
+
+  <div class="visual-container">
+    <img src="documentation/images/headless_cms_concept.png" alt="Headless CMS Concept" />
+    <div class="visual-caption">Fig 5 — Traditional CMS vs Headless CMS architecture</div>
+  </div>
+
+  <p>
+    A <strong>traditional CMS</strong> (like WordPress) bundles the content management, the database, 
+    and the frontend together into one monolithic system. Change one, and everything must be redeployed.
+  </p>
+  <p>
+    A <strong>headless CMS</strong> separates content management from content presentation. The CMS only 
+    manages content and exposes it through an API. The frontend is completely independent — it can be 
+    a website, a mobile app, or even an IoT device. This separation is called <strong>decoupled architecture</strong>.
+  </p>
+  <p>
+    <strong>Sanity</strong> is the headless CMS Anubhav uses. It provides:
+  </p>
+  <ul>
+    <li>A cloud-hosted document store for all content</li>
+    <li>A customizable authoring interface (Sanity Studio)</li>
+    <li>A real-time API with GROQ query language</li>
+    <li>Webhooks to trigger actions when content changes</li>
+    <li>An image CDN with on-the-fly transformations</li>
+  </ul>
+
+  <h3 id="san-schemas">Content Schemas</h3>
+  <p>
+    Sanity schemas define the <strong>shape</strong> of your content. They are JavaScript objects that describe 
+    what fields each document type has. Anubhav defines four schema types:
+  </p>
+
+  <h4>Post Schema</h4>
+  <p>The primary content type with fields for different post behaviors:</p>
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Purpose</th></tr>
+    <tr><td><code>title</code></td><td>string</td><td>Post headline</td></tr>
+    <tr><td><code>slug</code></td><td>slug</td><td>URL-friendly identifier (auto-generated from title)</td></tr>
+    <tr><td><code>author</code></td><td>reference → Author</td><td>Links to an author document</td></tr>
+    <tr><td><code>mainImage</code></td><td>image</td><td>Cover image with hotspot cropping</td></tr>
+    <tr><td><code>ogImage</code></td><td>image</td><td>Separate image for social media previews (1200×630)</td></tr>
+    <tr><td><code>categories</code></td><td>array of references</td><td>Links to Category documents</td></tr>
+    <tr><td><code>tags</code></td><td>array of strings</td><td>Flexible tags (rendered as pills)</td></tr>
+    <tr><td><code>postType</code></td><td>string (blog | premium | journal)</td><td>Controls which page displays the post</td></tr>
+    <tr><td><code>isPrivate</code></td><td>boolean</td><td>Requires Firebase login to read</td></tr>
+    <tr><td><code>isPremium</code></td><td>boolean</td><td>Requires Khalti payment to unlock full content</td></tr>
+    <tr><td><code>excerpt</code></td><td>text</td><td>Short summary for cards and SEO descriptions</td></tr>
+    <tr><td><code>readingTime</code></td><td>number</td><td>Estimated reading time in minutes</td></tr>
+    <tr><td><code>body</code></td><td>blockContent</td><td>Rich text body with headings, images, code blocks, and links</td></tr>
+  </table>
+
+  <h4>Author Schema</h4>
+  <p>Stores author name, slug, profile image, and a short bio. Posts reference authors through Sanity's <strong>document reference</strong> system.</p>
+
+  <h4>Category Schema</h4>
+  <p>Simple taxonomy with title and description. Posts can belong to multiple categories.</p>
+
+  <h4>Block Content Schema</h4>
+  <p>
+    Defines the rich text editor capabilities. Beyond standard text formatting (bold, italic, headings, quotes, links), 
+    it supports:
+  </p>
+  <ul>
+    <li><strong>Inline images</strong> with optional captions</li>
+    <li><strong>Code blocks</strong> with language selection (HTML, CSS, JS, Python, etc.) and optional filename</li>
+  </ul>
+
+  <h3 id="san-studio">Sanity Studio</h3>
+  <p>
+    Sanity Studio is a <strong>React-based web application</strong> that runs locally (or is deployed) 
+    and provides the authoring interface. It connects to the same Sanity project as the frontend, 
+    so any content published in the Studio is immediately available through the API.
+  </p>
+  <p>The Studio configuration is minimal:</p>
+  <pre><code>// sanity.config.js
+export default defineConfig({
+  name: 'default',
+  title: 'My-Blog',
+  projectId: 'xsd8o1za',
+  dataset: 'production',
+  plugins: [structureTool(), visionTool()],
+  schema: { types: schemaTypes },
+})</code></pre>
+  <p>
+    Two plugins are used: <strong>structureTool</strong> (the document editing UI) and 
+    <strong>visionTool</strong> (a GROQ query playground for testing queries directly in the Studio).
+  </p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     8. PROJECT STRUCTURE
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="project-structure" class="page-break">
+  <h2 class="section-heading"><span class="num">08</span> Project Structure</h2>
+
+  <div class="file-tree">
+    <span class="folder">Anubhav/</span><br />
+    ├── <span class="folder">Frontend/</span> <span class="comment">← Static site (served by Express)</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">index.html</span> <span class="comment">← Blog home with search, filters, post cards</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">journal.html</span> <span class="comment">← Journal entries page</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">post.html</span> <span class="comment">← Single post reader (2800+ lines)</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">login.html</span> <span class="comment">← Firebase email/password login</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">notifications.js</span> <span class="comment">← Bell UI + FCM push registration</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">firebase-messaging-sw.js</span> <span class="comment">← Unified service worker (PWA + FCM)</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">sw.js</span> <span class="comment">← Legacy service worker (fallback)</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">manifest.json</span> <span class="comment">← PWA manifest</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">favicon.png</span> <span class="comment">← App icon</span><br />
+    │&nbsp;&nbsp;&nbsp;└── <span class="folder">vendor/</span> <span class="comment">← Self-hosted Firebase SDKs</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">firebase-app.js</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">firebase-auth.js</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">firebase-messaging-compat.js</span><br />
+    │<br />
+    ├── <span class="folder">Backend/</span> <span class="comment">← Express API server</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">server.js</span> <span class="comment">← All API routes (846 lines)</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">package.json</span> <span class="comment">← Dependencies: express, mongoose, firebase-admin, cors</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">.env</span> <span class="comment">← Secrets (never committed)</span><br />
+    │&nbsp;&nbsp;&nbsp;└── <span class="file">.env.example</span> <span class="comment">← Template for environment variables</span><br />
+    │<br />
+    ├── <span class="folder">Sanity-Backend/</span> <span class="comment">← Sanity Studio CMS</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">sanity.config.js</span> <span class="comment">← Studio configuration</span><br />
+    │&nbsp;&nbsp;&nbsp;├── <span class="file">sanity.cli.js</span> <span class="comment">← CLI configuration</span><br />
+    │&nbsp;&nbsp;&nbsp;└── <span class="folder">schemaTypes/</span> <span class="comment">← Content model definitions</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">post.js</span> <span class="comment">← Post document schema</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">author.js</span> <span class="comment">← Author document schema</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">category.js</span> <span class="comment">← Category document schema</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">blockContent.js</span> <span class="comment">← Rich text editor config</span><br />
+    │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">index.js</span> <span class="comment">← Schema exports</span><br />
+    │<br />
+    └── <span class="file">README.md</span> <span class="comment">← Setup guide &amp; troubleshooting</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     9. API ENDPOINTS REFERENCE
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="api-endpoints" class="page-break">
+  <h2 class="section-heading"><span class="num">09</span> API Endpoints Reference</h2>
+
+  <h3>Subscription &amp; Payment</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr>
+    <tr><td><code>GET</code></td><td><code>/api/subscription/status?email=…</code></td><td>Check if an email has an active subscription</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/payment/initiate</code></td><td>Create a Khalti payment session</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/payment/callback?pidx=…</code></td><td>Khalti redirects here after payment</td></tr>
+  </table>
+
+  <h3>Reviews</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr>
+    <tr><td><code>POST</code></td><td><code>/api/reviews</code></td><td>Submit a new review (name, rating, feedback, slug)</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/reviews?slug=…</code></td><td>Fetch all reviews for a post</td></tr>
+    <tr><td><code>PUT</code></td><td><code>/api/reviews</code></td><td>Update an existing review (archives old version)</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/reviews/history?reviewId=…</code></td><td>Fetch version history of a review</td></tr>
+  </table>
+
+  <h3>Push Notifications</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr>
+    <tr><td><code>GET</code></td><td><code>/api/notifications/config</code></td><td>Public</td><td>Non-secret Firebase config for browser SDK</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/notifications/subscribe</code></td><td>Optional Bearer</td><td>Save device FCM token</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/notifications/unsubscribe</code></td><td>Optional Bearer</td><td>Remove device FCM token</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/notifications/status</code></td><td>Token or Bearer</td><td>Check if device/user is subscribed</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/notifications/send</code></td><td>Webhook signature</td><td>Broadcast notification (Sanity webhook)</td></tr>
+  </table>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="doc-footer">
+  <p><strong>Anubhav — Lived, Learned, Documented</strong></p>
+  <p>Project Documentation · Version 1.0 · August 2026</p>
+  <p>Built by Ajeet Thapa</p>
+</div>
+
+</div><!-- /doc-container -->
+</body>
+</html>
+
+    </template>
 
     <div id="auth-modal" class="auth-modal hidden">
       <div class="auth-card">
@@ -633,42 +2235,62 @@
 
     <script>
       /*
-      const modal = document.getElementById("auth-modal");
-      const appShell = document.getElementById("app-shell");
-      const statusEl = document.getElementById("auth-status");
+    const modal = document.getElementById("auth-modal");
+    const appShell = document.getElementById("app-shell");
+    const statusEl = document.getElementById("auth-status");
 
-      function showModal() {
-        modal.classList.remove("hidden");
-        appShell.classList.add("dimmed");
-        document.body.style.overflow = "hidden";
+    function showModal() {
+      modal.classList.remove("hidden");
+      appShell.classList.add("dimmed");
+      document.body.style.overflow = "hidden";
+    }
+
+    function hideModal() {
+      modal.classList.add("hidden");
+      appShell.classList.remove("dimmed");
+      document.body.style.overflow = "";
+      if (statusEl) {
+        statusEl.textContent = "";
       }
+    }
 
-      function hideModal() {
-        modal.classList.add("hidden");
-        appShell.classList.remove("dimmed");
-        document.body.style.overflow = "";
-        if (statusEl) {
-          statusEl.textContent = "";
-        }
-      }
+    window.showAuthModal = showModal;
+    window.hideAuthModal = hideModal;
+    window.pendingAuthUrl = null;
 
-      window.showAuthModal = showModal;
-      window.hideAuthModal = hideModal;
-      window.pendingAuthUrl = null;
+    document.addEventListener("click", (event) => {
+      const card = event.target.closest("a.card");
+      if (!card) return;
 
-      document.addEventListener("click", (event) => {
-        const card = event.target.closest("a.card");
-        if (!card) return;
-
-        event.preventDefault();
-        window.pendingAuthUrl = card.getAttribute("href");
-        showModal();
-      });
-      */
+      event.preventDefault();
+      window.pendingAuthUrl = card.getAttribute("href");
+      showModal();
+    });
+    */
     </script>
 
     <script type="module">
       const firebaseApiKey = "AIzaSyDNdgYedYk2yI3VsH58Ao3HF1A1UWMamD0";
+
+      // Sanity CDN image optimization: return a resized WebP instead of the
+      // full-size original. Cut page weight dramatically on card grids.
+      function imgUrl(url, w = 600, q = 70) {
+        if (!url) return "";
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes("cdn.sanity.io")) {
+            u.searchParams.set("auto", "format");
+            u.searchParams.set("fit", "max");
+            u.searchParams.set("w", String(w));
+            u.searchParams.set("q", String(q));
+            return u.toString();
+          }
+          return url;
+        } catch (e) {
+          return url;
+        }
+      }
+      window.imgUrl = imgUrl;
       const modal = document.getElementById("auth-modal");
       const appShell = document.getElementById("app-shell");
       const statusEl = document.getElementById("auth-status");
@@ -849,17 +2471,19 @@
         const html = document.documentElement;
         const isDark = html.getAttribute("data-theme") === "dark";
         html.setAttribute("data-theme", isDark ? "light" : "dark");
-        document.getElementById("theme-btn").textContent = isDark
-          ? "🌙 Dark"
-          : "☀️ Light";
+        const btn = document.getElementById("theme-btn");
+        btn.innerHTML = isDark
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
         localStorage.setItem("theme", isDark ? "light" : "dark");
       }
 
       // Load saved theme
       const savedTheme = localStorage.getItem("theme") || "light";
       document.documentElement.setAttribute("data-theme", savedTheme);
-      if (savedTheme === "dark")
-        document.getElementById("theme-btn").textContent = "☀️ Light";
+      if (savedTheme === "dark") {
+        document.getElementById("theme-btn").innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+      }
 
       function timeAgo(dateStr) {
         const diff = Date.now() - new Date(dateStr).getTime();
@@ -898,12 +2522,13 @@
         container.innerHTML = posts
           .map((post) => {
             const isPrivate = Boolean(post.isPrivate);
-            const isPremium = post.postType === "premium" || Boolean(post.isPremium);
+            const isPremium =
+              post.postType === "premium" || Boolean(post.isPremium);
             return `
-              <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="post.html?slug=${post.slug?.current}" data-private="${isPrivate}">
+              <a class="card${isPrivate ? " private" : ""}${isPremium ? " premium" : ""}" href="/blog/${post.slug?.current}" data-private="${isPrivate}">
                 ${isPremium ? '<div class="card-premium" title="Premium post">★</div>' : ""}
                 ${isPrivate ? '<div class="card-lock" title="Private post">🔒</div>' : ""}
-                ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" />` : ""}
+                ${post.imageUrl ? `<img src="${imgUrl(post.imageUrl, 600)}" alt="${post.title}" loading="lazy" decoding="async" />` : ""}
                 <div class="card-body">
                   ${
                     post.categories?.length
@@ -934,6 +2559,8 @@
           .join("");
       }
 
+      let searchQuery = "";
+
       function filterPosts() {
         let filtered = allPosts;
         if (activeCategory)
@@ -942,6 +2569,25 @@
           );
         if (activeTag)
           filtered = filtered.filter((p) => p.tags?.includes(activeTag));
+        if (searchQuery.trim()) {
+          const q = searchQuery.trim().toLowerCase();
+          filtered = filtered.filter((p) => {
+            const title = (p.title || "").toLowerCase();
+            const excerpt = (p.excerpt || "").toLowerCase();
+            const bodyText = (
+              p.body?.[0]?.children?.[0]?.text || ""
+            ).toLowerCase();
+            const tags = (p.tags || []).join(" ").toLowerCase();
+            const cats = (p.categories || []).join(" ").toLowerCase();
+            return (
+              title.includes(q) ||
+              excerpt.includes(q) ||
+              bodyText.includes(q) ||
+              tags.includes(q) ||
+              cats.includes(q)
+            );
+          });
+        }
         renderPosts(filtered);
       }
 
@@ -1011,17 +2657,142 @@
         }
       });
 
+      /* --- Search bar functionality --- */
+      const searchInput = document.getElementById("search-input");
+      const searchClear = document.getElementById("search-clear");
+
+      function handleSearch() {
+        searchQuery = searchInput.value;
+        searchClear.classList.toggle("visible", searchQuery.length > 0);
+        filterPosts();
+      }
+
+      searchInput.addEventListener("input", handleSearch);
+      searchClear.addEventListener("click", () => {
+        searchInput.value = "";
+        searchQuery = "";
+        searchClear.classList.remove("visible");
+        filterPosts();
+        searchInput.focus();
+      });
+
+      /* Handle Escape to clear */
+      searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          searchInput.value = "";
+          searchQuery = "";
+          searchClear.classList.remove("visible");
+          filterPosts();
+          searchInput.blur();
+        }
+      });
+
+      // Show skeleton cards while posts are loading (replaces the static
+      // SEO links in the browser; crawlers still see the raw-HTML links).
+      // The static links are kept aside so they can be restored if the
+      // Sanity fetch fails or returns nothing — the blog must never look
+      // empty.
+      (function () {
+        const grid = document.getElementById("posts");
+        if (!grid) return;
+        window.__staticPostsHTML = grid.innerHTML;
+        const sk = (cls) => `<div class="sk ${cls}"></div>`;
+        grid.innerHTML = Array.from({ length: 6 })
+          .map(
+            () => `
+          <div class="skeleton-card" aria-hidden="true">
+            ${sk("sk-image")}
+            <div class="skeleton-card-body">
+              ${sk("sk-line sk-card-title")}
+              ${sk("sk-line")}
+              ${sk("sk-line sk-short")}
+              <div class="skeleton-card-footer">
+                ${sk("sk-avatar")}
+                ${sk("sk-line sk-sm")}
+              </div>
+            </div>
+          </div>`,
+          )
+          .join("");
+      })();
+
+      // Restore the pre-rendered static post links when Sanity can't be
+      // reached (offline, cold start, CORS) or returns no blog posts, so
+      // the homepage always shows content instead of skeletons/empty state.
+      function restoreStaticPosts() {
+        const grid = document.getElementById("posts");
+        if (!grid) return;
+        grid.innerHTML =
+          window.__staticPostsHTML || '<p id="status">No posts found.</p>';
+      }
+
       fetch(API_URL)
         .then((res) => res.json())
         .then((data) => {
           allPosts = data.result || [];
           buildSidebar(allPosts);
+          if (!allPosts.length) {
+            // No blog/premium posts returned — show the static links
+            // instead of an empty-state message.
+            restoreStaticPosts();
+            return;
+          }
           renderPosts(allPosts);
         })
         .catch(() => {
-          document.getElementById("status").textContent =
-            "Failed to load posts.";
+          // Fetch failed (offline, slow cold start…). Show the static
+          // links so the blog never looks empty.
+          restoreStaticPosts();
         });
     </script>
-  </body>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/firebase-messaging-sw.js', { updateViaCache: 'none' })
+          .then(function () { console.log('SW registered'); })
+          .catch(function () { console.log('SW registration failed'); });
+      }
+    </script>
+    <script>
+      (function () {
+        const aboutBtn = document.getElementById('about-btn');
+        const docView = document.getElementById('doc-view');
+        const docFrame = document.getElementById('doc-frame');
+        const docClose = document.getElementById('doc-close');
+        const docTemplate = document.getElementById('doc-template');
+        if (!aboutBtn || !docView) return;
+
+        function openDocs() {
+          if (!docFrame.getAttribute('srcdoc')) {
+            docFrame.setAttribute('srcdoc', '<!DOCTYPE html>\n' + docTemplate.innerHTML);
+          } else if (docFrame.contentWindow) {
+            docFrame.contentWindow.scrollTo(0, 0);
+          }
+          docView.classList.add('open');
+          docView.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+          aboutBtn.classList.add('active');
+        }
+
+        function closeDocs() {
+          docView.classList.remove('open');
+          docView.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+          aboutBtn.classList.remove('active');
+        }
+
+        aboutBtn.addEventListener('click', function () {
+          if (docView.classList.contains('open')) closeDocs();
+          else openDocs();
+        });
+
+        docClose.addEventListener('click', closeDocs);
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && docView.classList.contains('open')) closeDocs();
+        });
+      })();
+    </script>
+  <script src="notifications.js"></script>
+</body>
 </html>
